@@ -1,0 +1,40 @@
+/*
+ * Editor styles for the oldbook hybrid theme.
+ */
+
+.editor-styles-wrapper {
+	background: #fffdf8;
+	color: #202426;
+	font-family: Arial, "Helvetica Neue", sans-serif;
+	font-size: 1rem;
+	line-height: 1.5;
+}
+
+.editor-styles-wrapper .wp-block {
+	max-width: 760px;
+}
+
+.editor-styles-wrapper .wp-block[data-align="wide"] {
+	max-width: 1120px;
+}
+
+.editor-styles-wrapper h1,
+.editor-styles-wrapper h2,
+.editor-styles-wrapper h3,
+.editor-styles-wrapper h4,
+.editor-styles-wrapper h5,
+.editor-styles-wrapper h6 {
+	font-family: Georgia, "Times New Roman", serif;
+	font-weight: 700;
+}
+
+.editor-styles-wrapper a {
+	color: #1d4b4d;
+}
+
+.editor-styles-wrapper blockquote {
+	padding-left: 1.25rem;
+	border-left: 3px solid #b46b45;
+	color: #1d4b4d;
+	font-family: Georgia, "Times New Roman", serif;
+}
