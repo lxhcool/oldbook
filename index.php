@@ -8,7 +8,7 @@
 get_header();
 ?>
 
-<main id="primary" class="site-main">
+<div id="primary" class="oldbook-main">
 	<?php if (is_home() && ! is_front_page()) : ?>
 		<header class="page-header">
 			<p class="eyebrow"><?php esc_html_e('Notebook', 'oldbook'); ?></p>
@@ -34,7 +34,7 @@ get_header();
 	<?php else : ?>
 		<?php get_template_part('template-parts/content', 'none'); ?>
 	<?php endif; ?>
-</main>
+</div>
 
 <?php
 get_sidebar();

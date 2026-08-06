@@ -8,7 +8,7 @@
 get_header();
 ?>
 
-<main id="primary" class="site-main">
+<div id="primary" class="oldbook-main">
 	<section class="not-found">
 		<p class="eyebrow"><?php esc_html_e('Page not found', 'oldbook'); ?></p>
 		<h1 class="page-title"><?php esc_html_e('This page has gone missing.', 'oldbook'); ?></h1>
@@ -18,7 +18,7 @@ get_header();
 			<?php esc_html_e('Back to the front page', 'oldbook'); ?>
 		</a>
 	</section>
-</main>
+</div>
 
 <?php
 get_sidebar();

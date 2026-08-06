@@ -8,7 +8,7 @@
 get_header();
 ?>
 
-<main id="primary" class="site-main">
+<div id="primary" class="oldbook-main">
 	<?php while (have_posts()) : the_post(); ?>
 		<?php get_template_part('template-parts/content', get_post_type()); ?>
 
@@ -25,7 +25,7 @@ get_header();
 			<?php comments_template(); ?>
 		<?php endif; ?>
 	<?php endwhile; ?>
-</main>
+</div>
 
 <?php
 get_sidebar();

@@ -12,43 +12,38 @@
 			"palette": [
 				{
 					"slug": "ink",
-					"color": "#202426",
+					"color": "#151515",
 					"name": "Ink"
 				},
 				{
 					"slug": "paper",
-					"color": "#eeeae1",
+					"color": "oklch(0.985 0.008 75)",
 					"name": "Paper"
 				},
 				{
 					"slug": "surface",
-					"color": "#fffdf8",
+					"color": "#ffffff",
 					"name": "Surface"
 				},
 				{
 					"slug": "muted",
-					"color": "#686b66",
+					"color": "#686868",
 					"name": "Muted"
 				},
 				{
 					"slug": "line",
-					"color": "#d3cec2",
+					"color": "#d6d6d6",
 					"name": "Line"
 				},
 				{
 					"slug": "accent",
-					"color": "#2d6d70",
+					"color": "#000000",
 					"name": "Accent"
 				},
 				{
 					"slug": "accent-dark",
-					"color": "#1d4b4d",
+					"color": "#000000",
 					"name": "Dark accent"
-				},
-				{
-					"slug": "copper",
-					"color": "#b46b45",
-					"name": "Copper"
 				}
 			]
 		},
@@ -120,10 +115,6 @@
 		}
 	},
 	"styles": {
-		"color": {
-			"background": "var:preset|color|paper",
-			"text": "var:preset|color|ink"
-		},
 		"typography": {
 			"fontFamily": "var:preset|font-family|sans",
 			"fontSize": "1rem",
