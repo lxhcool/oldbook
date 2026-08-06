@@ -176,6 +176,7 @@ function oldbook_get_update_preview($post_id) {
 
 function oldbook_icon($name, $class = '') {
 	$paths = array(
+		'arrow-right'   => '<path d="M5 12h14M13 6l6 6-6 6"/>',
 		'arrow-up-right' => '<path d="M7 17 17 7M8 7h9v9"/>',
 		'chevron-down'   => '<path d="m6 9 6 6 6-6"/>',
 		'edit'           => '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/>',

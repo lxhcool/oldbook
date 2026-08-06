@@ -7,6 +7,13 @@
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class('entry' . (is_singular() ? ' entry--single' : '')); ?>>
+	<?php if (! is_singular()) : ?>
+		<div class="entry-marker" aria-hidden="true">
+			<span class="entry-marker__month"><?php echo esc_html(get_the_date('m')); ?></span>
+			<strong><?php echo esc_html(get_the_date('d')); ?></strong>
+		</div>
+	<?php endif; ?>
+	<div class="entry-body">
 	<header class="entry-header">
 		<?php if (! is_singular()) : ?>
 			<p class="entry-kicker"><?php esc_html_e('文章', 'oldbook'); ?></p>
@@ -60,8 +67,9 @@
 		<?php if (! is_singular()) : ?>
 			<a class="read-more" href="<?php echo esc_url(get_permalink()); ?>">
 				<?php esc_html_e('阅读全文', 'oldbook'); ?>
-				<span aria-hidden="true"> -&gt;</span>
+				<?php echo oldbook_icon('arrow-right'); ?>
 			</a>
 		<?php endif; ?>
 	</footer>
+	</div>
 </article>

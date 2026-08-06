@@ -11,9 +11,17 @@ $type_data     = oldbook_get_update_types();
 $title         = get_the_title();
 $default_title = oldbook_default_update_title($type);
 $content       = get_post_field('post_content', $post_id);
+$is_single     = is_singular('oldbook_update');
 ?>
 
-<article id="post-<?php the_ID(); ?>" <?php post_class('oldbook-update oldbook-update--' . $type); ?>>
+<article id="post-<?php the_ID(); ?>" <?php post_class('oldbook-update oldbook-update--' . $type . ($is_single ? ' oldbook-update--single' : '')); ?>>
+	<?php if (! $is_single) : ?>
+		<div class="oldbook-update__marker" aria-hidden="true">
+			<span><?php echo esc_html(get_the_date('m')); ?></span>
+			<strong><?php echo esc_html(get_the_date('d')); ?></strong>
+		</div>
+	<?php endif; ?>
+	<div class="oldbook-update__body">
 	<header class="oldbook-update__header">
 		<div class="oldbook-update__meta">
 			<time datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('Y年n月j日 H:i')); ?></time>
@@ -22,14 +30,12 @@ $content       = get_post_field('post_content', $post_id);
 				<?php echo esc_html(oldbook_get_update_type_label($type)); ?>
 			</span>
 		</div>
-		<?php if ($title && $title !== $default_title) : ?>
-			<h2 class="oldbook-update__title">
-				<?php if (is_singular('oldbook_update')) : ?>
-					<?php echo esc_html($title); ?>
-				<?php else : ?>
-					<a href="<?php echo esc_url(get_permalink()); ?>"><?php echo esc_html($title); ?></a>
-				<?php endif; ?>
-			</h2>
+		<?php if ($title && ($is_single || $title !== $default_title)) : ?>
+			<?php if ($is_single) : ?>
+				<h1 class="oldbook-update__title"><?php echo esc_html($title); ?></h1>
+			<?php else : ?>
+				<h2 class="oldbook-update__title"><a href="<?php echo esc_url(get_permalink()); ?>"><?php echo esc_html($title); ?></a></h2>
+			<?php endif; ?>
 		<?php endif; ?>
 	</header>
 
@@ -45,7 +51,7 @@ $content       = get_post_field('post_content', $post_id);
 				<div class="oldbook-player oldbook-player--audio" data-oldbook-player>
 					<audio class="oldbook-player__media" preload="metadata" src="<?php echo esc_url($media_url); ?>"></audio>
 					<div class="oldbook-player__row">
-						<button class="oldbook-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放音频', 'oldbook'); ?>">
+						<button class="oldbook-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放音频', 'oldbook'); ?>" title="<?php esc_attr_e('播放音频', 'oldbook'); ?>">
 							<?php echo oldbook_icon('play'); ?>
 						</button>
 						<div class="oldbook-player__body">
@@ -62,12 +68,12 @@ $content       = get_post_field('post_content', $post_id);
 				<div class="oldbook-player oldbook-player--video" data-oldbook-player>
 					<div class="oldbook-player__video-frame">
 						<video class="oldbook-player__media" preload="metadata" playsinline src="<?php echo esc_url($media_url); ?>"></video>
-						<button class="oldbook-player__video-toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放视频', 'oldbook'); ?>">
+						<button class="oldbook-player__video-toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放视频', 'oldbook'); ?>" title="<?php esc_attr_e('播放视频', 'oldbook'); ?>">
 							<?php echo oldbook_icon('play'); ?>
 						</button>
 					</div>
 					<div class="oldbook-player__video-controls">
-						<button class="oldbook-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放视频', 'oldbook'); ?>">
+						<button class="oldbook-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放视频', 'oldbook'); ?>" title="<?php esc_attr_e('播放视频', 'oldbook'); ?>">
 							<?php echo oldbook_icon('play'); ?>
 						</button>
 						<input class="oldbook-player__progress" type="range" min="0" max="100" value="0" step="0.1" data-oldbook-player-progress aria-label="<?php esc_attr_e('视频进度', 'oldbook'); ?>">
@@ -101,7 +107,7 @@ $content       = get_post_field('post_content', $post_id);
 		<?php endif; ?>
 	<?php endif; ?>
 
-	<?php if (! is_singular('oldbook_update')) : ?>
+	<?php if (! $is_single) : ?>
 		<footer class="oldbook-update__footer">
 			<a href="<?php echo esc_url(get_permalink()); ?>">
 				<?php esc_html_e('查看动态', 'oldbook'); ?>
@@ -109,4 +115,5 @@ $content       = get_post_field('post_content', $post_id);
 			</a>
 		</footer>
 	<?php endif; ?>
+	</div>
 </article>

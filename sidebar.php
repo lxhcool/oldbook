@@ -58,7 +58,7 @@ if (! defined('ABSPATH')) {
 					<li class="<?php echo $nav_item['current'] ? 'is-current' : ''; ?>">
 						<a href="<?php echo esc_url($nav_item['url']); ?>"<?php echo $nav_item['current'] ? ' aria-current="page"' : ''; ?>>
 							<span><?php echo esc_html($nav_item['label']); ?></span>
-							<span class="oldbook-sidebar__arrow" aria-hidden="true">-&gt;</span>
+							<span class="oldbook-sidebar__arrow" aria-hidden="true"><?php echo oldbook_icon('arrow-right'); ?></span>
 						</a>
 					</li>
 				<?php endforeach; ?>
