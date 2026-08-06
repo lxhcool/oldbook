@@ -2,7 +2,6 @@
  * Editor styles for the oldbook hybrid theme.
  */
 
-
 :root {
 	--oldbook-editor-background: #fffdf8;
 	--oldbook-editor-background: oklch(0.985 0.008 75);
@@ -26,7 +25,7 @@
 .editor-styles-wrapper {
 	background: var(--oldbook-editor-background);
 	color: var(--oldbook-editor-foreground);
-	font-family: Arial, "Helvetica Neue", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
 	font-size: 1rem;
 	line-height: 1.5;
 }
@@ -45,7 +44,7 @@
 .editor-styles-wrapper h4,
 .editor-styles-wrapper h5,
 .editor-styles-wrapper h6 {
-	font-family: Georgia, "Times New Roman", serif;
+	font-family: "Songti SC", STSong, SimSun, Georgia, "Times New Roman", serif;
 	font-weight: 700;
 }
 
@@ -57,5 +56,5 @@
 	padding-left: 1.25rem;
 	border-left: 3px solid var(--oldbook-editor-accent);
 	color: var(--oldbook-editor-accent);
-	font-family: Georgia, "Times New Roman", serif;
+	font-family: "Songti SC", STSong, SimSun, Georgia, "Times New Roman", serif;
 }

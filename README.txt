@@ -2,15 +2,16 @@
 Contributors: lxhcool
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-oldbook is a quiet editorial hybrid theme for notes, essays, and archives.
+oldbook is a personal blog and timeline hybrid theme for articles, short updates,
+media moments, bookmarks, and friends.
 It keeps classic PHP templates while adding theme.json settings, editor styles,
-and reusable block patterns.
+and independent management screens for non-article content.
 
 == Features ==
 
@@ -19,10 +20,33 @@ and reusable block patterns.
 * Reusable block patterns in the oldbook category.
 * Custom logo, menus, widgets, post thumbnails, and responsive embeds.
 * Responsive layout and right-to-left stylesheet support.
+* A shared dynamic content type for text, music, video, and photo updates.
+* Custom audio and video controls, plus a responsive photo grid with up to nine images.
+* Independent admin screens for publishing dynamics and managing links.
+* A public bookmarks archive split between personal bookmarks and friends.
+* Markdown rendering with fenced-code highlighting for article detail pages.
+
+== Content URLs ==
+
+* Articles: the regular posts archive, or the Articles page template.
+* Dynamics: `/dynamics/`.
+* Bookmarks: `/bookmarks/`.
+
+== Management ==
+
+The WordPress dashboard contains an oldbook menu with separate screens for
+publishing dynamics, editing or deleting dynamics, adding links, and managing
+the bookmark directory. Dynamics and links do not use the default post editor.
 
 == Requirements ==
 
 WordPress 5.8 or later and PHP 7.4 or later.
+
+== Third-party ==
+
+Markdown parsing uses Parsedown under the MIT license.
+Code highlighting uses highlight.js under the BSD-3-Clause license.
+License files are included beside each bundled dependency.
 
 == License ==
 

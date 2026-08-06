@@ -1,0 +1,38 @@
+.entry-content pre code.hljs {
+		display: block;
+		padding: 0;
+		background: transparent;
+		color: inherit;
+}
+
+.entry-content pre .hljs-comment,
+.entry-content pre .hljs-quote {
+		color: var(--oldbook-code-muted);
+}
+
+.entry-content pre .hljs-keyword,
+.entry-content pre .hljs-selector-tag,
+.entry-content pre .hljs-literal,
+.entry-content pre .hljs-section,
+.entry-content pre .hljs-link {
+		color: var(--oldbook-code-keyword);
+	}
+
+.entry-content pre .hljs-string,
+.entry-content pre .hljs-title,
+.entry-content pre .hljs-name,
+.entry-content pre .hljs-type,
+.entry-content pre .hljs-attribute,
+.entry-content pre .hljs-symbol,
+.entry-content pre .hljs-bullet,
+.entry-content pre .hljs-addition {
+		color: var(--oldbook-code-string);
+	}
+
+.entry-content pre .hljs-number,
+.entry-content pre .hljs-variable,
+.entry-content pre .hljs-template-variable,
+.entry-content pre .hljs-tag,
+.entry-content pre .hljs-regexp {
+		color: var(--oldbook-code-number);
+	}

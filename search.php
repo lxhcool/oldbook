@@ -10,11 +10,11 @@ get_header();
 
 <div id="primary" class="oldbook-main">
 	<header class="page-header">
-		<p class="eyebrow"><?php esc_html_e('Search', 'oldbook'); ?></p>
+		<p class="eyebrow"><?php esc_html_e('搜索', 'oldbook'); ?></p>
 		<h1 class="page-title">
 			<?php
 			printf(
-				esc_html__('Results for %s', 'oldbook'),
+				esc_html__('搜索“%s”的结果', 'oldbook'),
 				'<span>' . esc_html(get_search_query()) . '</span>'
 			);
 			?>
@@ -31,8 +31,8 @@ get_header();
 		<?php
 		the_posts_navigation(
 			array(
-				'prev_text' => __('Older entries', 'oldbook'),
-				'next_text' => __('Newer entries', 'oldbook'),
+				'prev_text' => __('更早内容', 'oldbook'),
+				'next_text' => __('更新内容', 'oldbook'),
 			)
 		);
 		?>

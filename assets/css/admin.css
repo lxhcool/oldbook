@@ -1,0 +1,287 @@
+:root {
+	--oldbook-admin-canvas: #f6f6f3;
+	--oldbook-admin-surface: #ffffff;
+	--oldbook-admin-surface-hover: #f0f0ed;
+	--oldbook-admin-brand: #111111;
+	--oldbook-admin-brand-hover: #3b3b3b;
+	--oldbook-admin-text-primary: #151515;
+	--oldbook-admin-text-secondary: #686868;
+	--oldbook-admin-text-tertiary: #8a8a8a;
+	--oldbook-admin-border: #d4d4d0;
+	--oldbook-admin-border-strong: #111111;
+	--oldbook-admin-danger: #8a2525;
+	--oldbook-admin-danger-bg: #f8e8e8;
+	--oldbook-admin-success: #2e6b42;
+	--oldbook-admin-success-bg: #e8f3ea;
+	--oldbook-admin-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.oldbook-admin-wrap {
+		max-width: 1040px;
+		color: var(--oldbook-admin-text-primary);
+}
+
+.oldbook-admin-wrap h1,
+.oldbook-admin-wrap h2 {
+		color: var(--oldbook-admin-text-primary);
+		font-family: Georgia, "Times New Roman", serif;
+}
+
+.oldbook-admin-wrap h1 {
+		font-size: 22px;
+}
+
+.oldbook-admin-wrap h2 {
+		margin: 0 0 12px;
+		font-size: 18px;
+}
+
+.oldbook-admin-lede,
+.oldbook-admin-table__preview,
+.oldbook-admin-form .description {
+		color: var(--oldbook-admin-text-secondary);
+}
+
+.oldbook-admin-toolbar {
+		display: flex;
+		justify-content: flex-end;
+		margin: 20px 0;
+}
+
+.oldbook-admin-wrap .button {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		border-radius: 2px;
+		transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.oldbook-admin-wrap .button-primary {
+		background: var(--oldbook-admin-brand);
+		border-color: var(--oldbook-admin-brand);
+		color: #fff;
+}
+
+.oldbook-admin-wrap .button-primary:hover,
+.oldbook-admin-wrap .button-primary:focus {
+		background: var(--oldbook-admin-brand-hover);
+		border-color: var(--oldbook-admin-brand-hover);
+		color: #fff;
+}
+
+.oldbook-icon {
+		display: inline-block;
+		width: 16px;
+		height: 16px;
+		flex: 0 0 16px;
+		vertical-align: -0.2em;
+}
+
+.oldbook-admin-table {
+		border: 1px solid var(--oldbook-admin-border);
+		box-shadow: var(--oldbook-admin-shadow-sm);
+}
+
+.oldbook-admin-table th,
+.oldbook-admin-table td {
+		vertical-align: middle;
+}
+
+.oldbook-admin-table__preview {
+		margin: 4px 0 0;
+		font-size: 12px;
+}
+
+.oldbook-admin-table__actions {
+		width: 190px;
+		text-align: right;
+		white-space: nowrap;
+}
+
+.oldbook-admin-table__actions form {
+		display: inline-block;
+		margin: 0;
+}
+
+.oldbook-admin-danger {
+		color: var(--oldbook-admin-danger) !important;
+}
+
+.oldbook-admin-type {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+}
+
+.oldbook-admin-type__icon {
+		display: inline-flex;
+		color: var(--oldbook-admin-text-secondary);
+}
+
+.oldbook-admin-empty {
+		padding: 32px 20px;
+		background: var(--oldbook-admin-surface);
+		border: 1px solid var(--oldbook-admin-border);
+		color: var(--oldbook-admin-text-secondary);
+		text-align: center;
+}
+
+.oldbook-admin-form {
+		max-width: 760px;
+}
+
+.oldbook-admin-form__section {
+		margin: 0 0 24px;
+		padding: 20px;
+		background: var(--oldbook-admin-surface);
+		border: 1px solid var(--oldbook-admin-border);
+		box-shadow: var(--oldbook-admin-shadow-sm);
+}
+
+.oldbook-admin-form__section:last-of-type {
+		margin-bottom: 0;
+}
+
+.oldbook-admin-form__section > :last-child {
+		margin-bottom: 0;
+}
+
+.oldbook-admin-label {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 10px;
+		margin: 0 0 8px;
+		font-weight: 600;
+}
+
+.oldbook-admin-label span {
+		color: var(--oldbook-admin-text-tertiary);
+		font-size: 12px;
+		font-weight: 400;
+	}
+
+.oldbook-admin-form input[type="text"],
+.oldbook-admin-form input[type="url"],
+.oldbook-admin-form textarea {
+		width: 100%;
+		border: 1px solid var(--oldbook-admin-border);
+		border-radius: 2px;
+		box-shadow: none;
+		color: var(--oldbook-admin-text-primary);
+	}
+
+.oldbook-admin-form input[type="text"],
+.oldbook-admin-form input[type="url"] {
+		min-height: 40px;
+	}
+
+.oldbook-admin-form textarea {
+		min-height: 130px;
+		resize: vertical;
+}
+
+.oldbook-admin-form input[type="text"]:focus,
+.oldbook-admin-form input[type="url"]:focus,
+.oldbook-admin-form textarea:focus {
+		border-color: var(--oldbook-admin-border-strong);
+		box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.12);
+		outline: none;
+}
+
+.oldbook-picker {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 8px;
+}
+
+.oldbook-picker--compact {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		max-width: 440px;
+}
+
+.oldbook-picker__option {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-height: 48px;
+		padding: 8px 10px;
+		background: var(--oldbook-admin-surface);
+		border: 1px solid var(--oldbook-admin-border);
+		border-radius: 2px;
+		color: var(--oldbook-admin-text-primary);
+		cursor: pointer;
+		font-weight: 600;
+		transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.oldbook-picker__option:hover,
+.oldbook-picker__option:focus {
+		background: var(--oldbook-admin-surface-hover);
+		border-color: var(--oldbook-admin-border-strong);
+		outline: none;
+}
+
+.oldbook-picker__option.is-selected {
+		background: var(--oldbook-admin-brand);
+		border-color: var(--oldbook-admin-brand);
+		color: #fff;
+}
+
+.oldbook-picker__icon {
+		display: inline-flex;
+}
+
+.oldbook-admin-conditional,
+.oldbook-admin-media-source {
+		display: none;
+}
+
+.oldbook-admin-conditional.is-visible,
+.oldbook-admin-media-source.is-visible {
+		display: block;
+}
+
+.oldbook-admin-media-source + .oldbook-admin-media-source {
+		margin-top: 16px;
+}
+
+.oldbook-admin-photo-list {
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		gap: 8px;
+		margin-top: 16px;
+}
+
+.oldbook-admin-photo-list img {
+		display: block;
+		width: 100%;
+		aspect-ratio: 1;
+		object-fit: cover;
+		background: var(--oldbook-admin-canvas);
+	}
+
+.oldbook-admin-form__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+		margin-top: 24px;
+}
+
+@media (max-width: 782px) {
+	.oldbook-admin-table {
+		display: block;
+		overflow-x: auto;
+	}
+
+	.oldbook-picker {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oldbook-admin-wrap .button,
+	.oldbook-picker__option {
+		transition-duration: 0.01ms;
+	}
+}

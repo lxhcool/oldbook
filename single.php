@@ -15,8 +15,8 @@ get_header();
 		<?php
 		the_post_navigation(
 			array(
-				'prev_text' => '<span class="nav-subtitle">' . esc_html__('Previous entry', 'oldbook') . '</span><span class="nav-title">%title</span>',
-				'next_text' => '<span class="nav-subtitle">' . esc_html__('Next entry', 'oldbook') . '</span><span class="nav-title">%title</span>',
+				'prev_text' => '<span class="nav-subtitle">' . esc_html__('上一篇', 'oldbook') . '</span><span class="nav-title">%title</span>',
+				'next_text' => '<span class="nav-subtitle">' . esc_html__('下一篇', 'oldbook') . '</span><span class="nav-title">%title</span>',
 			)
 		);
 		?>

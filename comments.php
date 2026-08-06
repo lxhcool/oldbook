@@ -15,9 +15,9 @@ if (post_password_required()) {
 		<h2 class="comments-title">
 			<?php
 			comments_number(
-				esc_html__('No responses yet', 'oldbook'),
-				esc_html__('One response', 'oldbook'),
-				esc_html__('% responses', 'oldbook')
+				esc_html__('还没有评论', 'oldbook'),
+				esc_html__('1 条评论', 'oldbook'),
+				esc_html__('% 条评论', 'oldbook')
 			);
 			?>
 		</h2>
@@ -37,7 +37,7 @@ if (post_password_required()) {
 	<?php endif; ?>
 
 	<?php if (! comments_open() && get_comments_number()) : ?>
-		<p class="no-comments"><?php esc_html_e('Comments are closed.', 'oldbook'); ?></p>
+		<p class="no-comments"><?php esc_html_e('评论已关闭。', 'oldbook'); ?></p>
 	<?php endif; ?>
 
 	<?php comment_form(); ?>

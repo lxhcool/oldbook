@@ -23,7 +23,7 @@
 		<?php
 		wp_link_pages(
 			array(
-				'before' => '<nav class="post-pages" aria-label="' . esc_attr__('Page', 'oldbook') . '">',
+				'before' => '<nav class="post-pages" aria-label="' . esc_attr__('页码', 'oldbook') . '">',
 				'after'  => '</nav>',
 			)
 		);

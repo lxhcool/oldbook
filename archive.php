@@ -10,7 +10,7 @@ get_header();
 
 <div id="primary" class="oldbook-main">
 	<header class="page-header">
-		<p class="eyebrow"><?php esc_html_e('Archive', 'oldbook'); ?></p>
+		<p class="eyebrow"><?php esc_html_e('归档', 'oldbook'); ?></p>
 		<?php the_archive_title('<h1 class="page-title">', '</h1>'); ?>
 		<?php the_archive_description('<div class="archive-description">', '</div>'); ?>
 	</header>
@@ -25,8 +25,8 @@ get_header();
 		<?php
 		the_posts_navigation(
 			array(
-				'prev_text' => __('Older entries', 'oldbook'),
-				'next_text' => __('Newer entries', 'oldbook'),
+				'prev_text' => __('更早内容', 'oldbook'),
+				'next_text' => __('更新内容', 'oldbook'),
 			)
 		);
 		?>

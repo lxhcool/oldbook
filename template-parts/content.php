@@ -9,7 +9,7 @@
 <article id="post-<?php the_ID(); ?>" <?php post_class('entry' . (is_singular() ? ' entry--single' : '')); ?>>
 	<header class="entry-header">
 		<?php if (! is_singular()) : ?>
-			<p class="entry-kicker"><?php esc_html_e('Entry', 'oldbook'); ?></p>
+			<p class="entry-kicker"><?php esc_html_e('文章', 'oldbook'); ?></p>
 		<?php endif; ?>
 
 		<?php if (is_singular()) : ?>
@@ -42,7 +42,7 @@
 			<?php
 			wp_link_pages(
 				array(
-					'before' => '<nav class="post-pages" aria-label="' . esc_attr__('Page', 'oldbook') . '">',
+					'before' => '<nav class="post-pages" aria-label="' . esc_attr__('页码', 'oldbook') . '">',
 					'after'  => '</nav>',
 				)
 			);
@@ -59,7 +59,7 @@
 
 		<?php if (! is_singular()) : ?>
 			<a class="read-more" href="<?php echo esc_url(get_permalink()); ?>">
-				<?php esc_html_e('Read the entry', 'oldbook'); ?>
+				<?php esc_html_e('阅读全文', 'oldbook'); ?>
 				<span aria-hidden="true"> -&gt;</span>
 			</a>
 		<?php endif; ?>

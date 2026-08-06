@@ -9,6 +9,11 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
+require_once get_template_directory() . '/inc/helpers.php';
+require_once get_template_directory() . '/inc/content-types.php';
+require_once get_template_directory() . '/inc/markdown.php';
+require_once get_template_directory() . '/inc/admin.php';
+
 function oldbook_setup() {
 	load_theme_textdomain('oldbook', get_template_directory() . '/languages');
 
@@ -44,24 +49,24 @@ function oldbook_setup() {
 
 	register_nav_menus(
 		array(
-			'primary' => __('Primary Menu', 'oldbook'),
-			'footer'  => __('Footer Menu', 'oldbook'),
+			'primary' => __('主菜单', 'oldbook'),
+			'footer'  => __('底部菜单', 'oldbook'),
 		)
 	);
 }
 add_action('after_setup_theme', 'oldbook_setup');
 
 function oldbook_set_content_width() {
-	$GLOBALS['content_width'] = 760;
+	$GLOBALS['content_width'] = 660;
 }
 add_action('after_setup_theme', 'oldbook_set_content_width', 0);
 
 function oldbook_widgets_init() {
 	register_sidebar(
 		array(
-			'name'          => __('Sidebar', 'oldbook'),
+			'name'          => __('侧栏', 'oldbook'),
 			'id'            => 'sidebar-1',
-			'description'   => __('Add widgets here to show a sidebar beside the content.', 'oldbook'),
+			'description'   => __('添加小工具，它们会显示在内容旁边。', 'oldbook'),
 			'before_widget' => '<section id="%1$s" class="widget %2$s">',
 			'after_widget'  => '</section>',
 			'before_title'  => '<h2 class="widget-title">',
@@ -89,6 +94,30 @@ function oldbook_enqueue_styles() {
 		get_stylesheet_uri(),
 		array(),
 		$theme->get('Version')
+	);
+
+	if (is_singular('post')) {
+		wp_enqueue_style(
+			'oldbook-highlight',
+			get_template_directory_uri() . '/assets/css/highlight.css',
+			array(),
+			$theme->get('Version')
+		);
+		wp_enqueue_script(
+			'oldbook-highlight',
+			get_template_directory_uri() . '/assets/js/highlight.min.js',
+			array(),
+			'11.11.1',
+			true
+		);
+	}
+
+	wp_enqueue_script(
+		'oldbook-script',
+		get_template_directory_uri() . '/assets/js/oldbook.js',
+		is_singular('post') ? array('oldbook-highlight') : array(),
+		$theme->get('Version'),
+		true
 	);
 }
 add_action('wp_enqueue_scripts', 'oldbook_enqueue_styles');

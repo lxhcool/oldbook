@@ -1,17 +1,17 @@
 <?php
 /**
- * Title: Oldbook quote note
+ * Title: oldbook 引文笔记
  * Slug: oldbook/quote-note
- * Description: A restrained quote block for editorial content.
+ * Description: 适合编辑内容的克制引文区块。
  * Categories: oldbook, text
- * Keywords: quote, pullquote, editorial
+ * Keywords: 引文, 摘录, 编辑
  * Viewport Width: 760
  */
 ?>
 
 <!-- wp:quote {"className":"is-style-large"} -->
 <blockquote class="wp-block-quote is-style-large">
-	<p>A good archive leaves room for the next thought.</p>
+	<p>好的归档，总会为下一次思考留下空间。</p>
 	<cite>oldbook</cite>
 </blockquote>
 <!-- /wp:quote -->

@@ -2,11 +2,6 @@
  * RTL support for oldbook.
  */
 
-body.rtl .site-brand__mark {
-	border-right: 4px solid var(--oldbook-accent);
-	border-left: 0;
-}
-
 body.rtl .page-header {
 	padding-right: 1rem;
 	padding-left: 0;
@@ -14,7 +9,7 @@ body.rtl .page-header {
 	border-left: 0;
 }
 
-body.rtl blockquote {
+body.rtl .entry-content blockquote {
 	padding-right: 1.25rem;
 	padding-left: 0;
 	border-right: 3px solid var(--oldbook-accent);

@@ -11,7 +11,7 @@ get_header();
 <div id="primary" class="oldbook-main">
 	<?php if (is_home() && ! is_front_page()) : ?>
 		<header class="page-header">
-			<p class="eyebrow"><?php esc_html_e('Notebook', 'oldbook'); ?></p>
+			<p class="eyebrow"><?php esc_html_e('文章', 'oldbook'); ?></p>
 			<h1 class="page-title"><?php single_post_title(); ?></h1>
 		</header>
 	<?php endif; ?>
@@ -26,8 +26,8 @@ get_header();
 		<?php
 		the_posts_navigation(
 			array(
-				'prev_text' => __('Older entries', 'oldbook'),
-				'next_text' => __('Newer entries', 'oldbook'),
+				'prev_text' => __('更早内容', 'oldbook'),
+				'next_text' => __('更新内容', 'oldbook'),
 			)
 		);
 		?>
