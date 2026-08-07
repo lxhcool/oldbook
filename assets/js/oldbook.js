@@ -5,8 +5,6 @@
 	var pauseIcon = '<svg class="oldbook-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 4v16M17 4v16"/></svg>';
 	var moonIcon = '<svg class="oldbook-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>';
 	var sunIcon = '<svg class="oldbook-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
-	var menuIcon = '<svg class="oldbook-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
-	var closeIcon = '<svg class="oldbook-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6 6 18M6 6l12 12"/></svg>';
 
 	var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -161,68 +159,7 @@
 		});
 
 		document.addEventListener('click', function (event) {
-			if (panel.classList.contains('is-open') && !event.target.closest('.oldbook-topbar')) {
-				setOpen(false, false);
-			}
-		});
-	}
-
-	function setupDrawer() {
-		var toggle = document.querySelector('[data-oldbook-menu-toggle]');
-		var close = document.querySelector('[data-oldbook-menu-close]');
-		var drawer = document.getElementById('oldbook-drawer');
-		var overlay = document.querySelector('[data-oldbook-overlay]');
-
-		if (!toggle || !drawer) {
-			return;
-		}
-
-		var firstLink = drawer.querySelector('a');
-
-		function setOpen(open, focusContent) {
-			toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-			drawer.classList.toggle('is-open', open);
-			document.body.style.overflow = open ? 'hidden' : '';
-
-			if (overlay) {
-				overlay.classList.toggle('is-visible', open);
-			}
-
-			if (open && focusContent && firstLink) {
-				window.setTimeout(function () {
-					firstLink.focus();
-				}, reducedMotion ? 0 : 260);
-			}
-
-			if (!open && document.activeElement && document.activeElement.closest('[data-oldbook-drawer]')) {
-				toggle.focus();
-			}
-		}
-
-		toggle.addEventListener('click', function () {
-			setOpen('true' !== toggle.getAttribute('aria-expanded'), true);
-		});
-
-		if (close) {
-			close.addEventListener('click', function () {
-				setOpen(false, false);
-			});
-		}
-
-		if (overlay) {
-			overlay.addEventListener('click', function () {
-				setOpen(false, false);
-			});
-		}
-
-		document.addEventListener('keydown', function (event) {
-			if ('Escape' === event.key && drawer.classList.contains('is-open')) {
-				setOpen(false, false);
-			}
-		});
-
-		drawer.addEventListener('click', function (event) {
-			if (event.target.closest('a')) {
+			if (panel.classList.contains('is-open') && !event.target.closest('.oldbook-layout__banner')) {
 				setOpen(false, false);
 			}
 		});
@@ -449,7 +386,7 @@
 
 	setupThemeToggle();
 	setupSearchPanel();
-	setupDrawer();
+
 	setupInteractions();
 	highlightCodeBlocks();
 }());

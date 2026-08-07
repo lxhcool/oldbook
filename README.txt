@@ -18,7 +18,7 @@ and independent management screens for non-article content.
 * Classic PHP template hierarchy.
 * Global editor settings through theme.json.
 * Reusable block patterns in the oldbook category.
-* Custom logo, menus, widgets, post thumbnails, and responsive embeds.
+* Independent site identity and cover settings, menus, widgets, post thumbnails, and responsive embeds.
 * Responsive layout and right-to-left stylesheet support.
 * A shared dynamic content type for text, music, video, and photo updates.
 * Custom audio and video controls, plus a responsive photo grid with up to nine images.
@@ -35,8 +35,9 @@ and independent management screens for non-article content.
 == Management ==
 
 The WordPress dashboard contains an oldbook menu with separate screens for
-publishing dynamics, editing or deleting dynamics, adding links, and managing
-the bookmark directory. Dynamics and links do not use the default post editor.
+site settings, publishing dynamics, editing or deleting dynamics, adding links,
+and managing the bookmark directory. Dynamics and links do not use the default
+post editor.
 
 == Requirements ==
 

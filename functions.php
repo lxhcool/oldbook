@@ -27,26 +27,6 @@ function oldbook_setup() {
 	add_theme_support('wp-block-styles');
 	add_editor_style('editor-style.css');
 	add_theme_support(
-		'custom-logo',
-		array(
-			'height'      => 64,
-			'width'       => 240,
-			'flex-height' => true,
-			'flex-width'  => true,
-		)
-	);
-	add_theme_support(
-		'custom-header',
-		array(
-			'width'         => 1200,
-			'height'        => 420,
-			'flex-width'    => true,
-			'flex-height'   => true,
-			'header-text'   => false,
-			'default-image' => get_template_directory_uri() . '/assets/images/oldbook-profile-cover.jpg',
-		)
-	);
-	add_theme_support(
 		'html5',
 		array(
 			'search-form',
@@ -92,7 +72,7 @@ function oldbook_register_pattern_categories() {
 	register_block_pattern_category(
 		'oldbook',
 		array(
-			'label' => __('oldbook', 'oldbook'),
+			'label' => __('旧书主题', 'oldbook'),
 		)
 	);
 }

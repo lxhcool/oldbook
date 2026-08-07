@@ -12,6 +12,8 @@ $title         = get_the_title();
 $default_title = oldbook_default_update_title($type);
 $content       = get_post_field('post_content', $post_id);
 $variant       = isset($args['variant']) && 'compact' === $args['variant'] ? 'compact' : 'featured';
+	$site_name        = oldbook_get_site_title();
+$profile_image_url = oldbook_get_profile_image_url(72);
 ?>
 
 <?php if ('compact' === $variant) : ?>
@@ -60,14 +62,28 @@ $variant       = isset($args['variant']) && 'compact' === $args['variant'] ? 'co
 	</article>
 <?php else : ?>
 	<article id="post-<?php the_ID(); ?>" <?php post_class('oldbook-update oldbook-update--featured oldbook-update--' . $type); ?> style="--i: <?php echo esc_attr(oldbook_next_stagger()); ?>">
+		<div class="oldbook-update__avatar" aria-hidden="true">
+			<?php if ($profile_image_url) : ?>
+				<img src="<?php echo esc_url($profile_image_url); ?>" alt="" loading="lazy">
+			<?php else : ?>
+				<span><?php echo esc_html(mb_substr($site_name, 0, 1)); ?></span>
+			<?php endif; ?>
+		</div>
 		<div class="oldbook-update__frame">
 			<header class="oldbook-update__header">
-				<div class="oldbook-update__meta">
-					<span class="oldbook-update__type">
-						<span class="oldbook-update__type-icon"><?php echo oldbook_icon($type_data[$type]['icon']); ?></span>
-						<?php echo esc_html(oldbook_get_update_type_label($type)); ?>
-					</span>
-					<time class="oldbook-update__time" datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('m.d H:i')); ?></time>
+				<div class="oldbook-update__topline">
+					<div class="oldbook-update__author">
+						<strong><?php echo esc_html($site_name); ?></strong>
+						<time class="oldbook-update__time" datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>">
+							<?php echo esc_html(human_time_diff(get_post_time('U', true), current_time('timestamp', true)) . __('前', 'oldbook')); ?>
+						</time>
+					</div>
+					<div class="oldbook-update__meta">
+						<span class="oldbook-update__type">
+							<span class="oldbook-update__type-icon"><?php echo oldbook_icon($type_data[$type]['icon']); ?></span>
+							<?php echo esc_html(oldbook_get_update_type_label($type)); ?>
+						</span>
+					</div>
 				</div>
 				<?php if ($title && $title !== $default_title) : ?>
 					<h2 class="oldbook-update__title"><?php echo esc_html($title); ?></h2>

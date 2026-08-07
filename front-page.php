@@ -26,10 +26,8 @@ $updates = new WP_Query(
 
 	<?php if ($updates->have_posts()) : ?>
 		<div class="oldbook-update-list">
-			<?php $updates->the_post(); ?>
-			<?php get_template_part('template-parts/content', 'oldbook-update', array('variant' => 'featured')); ?>
 			<?php while ($updates->have_posts()) : $updates->the_post(); ?>
-				<?php get_template_part('template-parts/content', 'oldbook-update', array('variant' => 'compact')); ?>
+				<?php get_template_part('template-parts/content', 'oldbook-update', array('variant' => 'featured')); ?>
 			<?php endwhile; ?>
 		</div>
 

@@ -9,6 +9,147 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
+function oldbook_sanitize_checkbox($value) {
+	return (bool) $value;
+}
+
+function oldbook_sanitize_percentage($value) {
+	return min(100, max(0, absint($value)));
+}
+
+function oldbook_sanitize_cover_direction($value) {
+	$directions = array(
+		'to bottom',
+		'to right',
+		'135deg',
+		'to bottom right',
+	);
+
+	return in_array($value, $directions, true) ? $value : 'to bottom';
+}
+
+function oldbook_hex_to_rgba($color, $alpha = 1) {
+	$color = sanitize_hex_color($color);
+
+	if (! $color) {
+		return 'rgba(17, 32, 26, 0.26)';
+	}
+
+	$hex = ltrim($color, '#');
+
+	if (3 === strlen($hex)) {
+		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+	}
+
+	$alpha = max(0, min(1, (float) $alpha));
+
+	return sprintf(
+		'rgba(%d, %d, %d, %.3f)',
+		hexdec(substr($hex, 0, 2)),
+		hexdec(substr($hex, 2, 2)),
+		hexdec(substr($hex, 4, 2)),
+		$alpha
+	);
+}
+
+function oldbook_get_site_title() {
+	$title = trim((string) get_theme_mod('oldbook_site_title', ''));
+
+	if ($title) {
+		return $title;
+	}
+
+	$title = trim((string) get_bloginfo('name'));
+
+	return $title ? $title : 'oldbook';
+}
+
+function oldbook_get_site_tagline() {
+	$tagline = trim((string) get_theme_mod('oldbook_site_tagline', ''));
+
+	if ($tagline) {
+		return $tagline;
+	}
+
+	$tagline = trim((string) get_bloginfo('description'));
+
+	return $tagline ? $tagline : __('动态记录', 'oldbook');
+}
+
+function oldbook_get_site_logo_url($size = 'thumbnail') {
+	$site_logo_id = absint(get_theme_mod('oldbook_site_logo_id', 0));
+	$image_url    = $site_logo_id ? wp_get_attachment_image_url($site_logo_id, $size) : '';
+
+	if (! $image_url && $site_logo_id) {
+		$image_url = wp_get_attachment_url($site_logo_id);
+	}
+
+	if (! $image_url) {
+		$image_url = esc_url_raw((string) get_theme_mod('oldbook_site_logo', ''));
+	}
+
+	if (! $image_url) {
+		$legacy_logo_id = (int) get_theme_mod('custom_logo');
+		$image_url      = $legacy_logo_id ? wp_get_attachment_image_url($legacy_logo_id, $size) : '';
+
+		if (! $image_url && $legacy_logo_id) {
+			$image_url = wp_get_attachment_url($legacy_logo_id);
+		}
+	}
+
+	return $image_url ? $image_url : '';
+}
+
+function oldbook_get_cover_image_url() {
+	$cover_id  = absint(get_theme_mod('oldbook_cover_image_id', 0));
+	$cover_url = $cover_id ? wp_get_attachment_url($cover_id) : '';
+
+	if (! $cover_url) {
+		$cover_url = esc_url_raw((string) get_theme_mod('oldbook_cover_image', ''));
+	}
+
+	if (! $cover_url && function_exists('get_header_image')) {
+		$cover_url = get_header_image();
+	}
+
+	if (! $cover_url) {
+		$cover_url = get_template_directory_uri() . '/assets/images/oldbook-profile-cover.jpg';
+	}
+
+	return $cover_url;
+}
+
+function oldbook_get_cover_settings() {
+	$overlay_color      = sanitize_hex_color(get_theme_mod('oldbook_cover_overlay_color', '#11201a'));
+	$overlay_color      = $overlay_color ? $overlay_color : '#11201a';
+	$overlay_opacity    = oldbook_sanitize_percentage(get_theme_mod('oldbook_cover_overlay_opacity', 26));
+	$overlay_alpha      = $overlay_opacity / 100;
+	$gradient_enabled   = (bool) get_theme_mod('oldbook_cover_gradient_enabled', false);
+	$gradient_start     = sanitize_hex_color(get_theme_mod('oldbook_cover_gradient_start', '#11201a'));
+	$gradient_end       = sanitize_hex_color(get_theme_mod('oldbook_cover_gradient_end', '#1d7a55'));
+	$gradient_direction = oldbook_sanitize_cover_direction(get_theme_mod('oldbook_cover_gradient_direction', 'to bottom'));
+	$cover_overlay      = oldbook_hex_to_rgba($overlay_color, $overlay_alpha);
+
+	if ($gradient_enabled && $gradient_start && $gradient_end) {
+		$cover_overlay = sprintf(
+			'linear-gradient(%s, %s, %s)',
+			$gradient_direction,
+			oldbook_hex_to_rgba($gradient_start, $overlay_alpha),
+			oldbook_hex_to_rgba($gradient_end, $overlay_alpha)
+		);
+	}
+
+	return array(
+		'overlay_color'      => $overlay_color,
+		'overlay_opacity'    => $overlay_opacity,
+		'gradient_enabled'   => $gradient_enabled,
+		'gradient_start'     => $gradient_start ? $gradient_start : '#11201a',
+		'gradient_end'       => $gradient_end ? $gradient_end : '#1d7a55',
+		'gradient_direction' => $gradient_direction,
+		'overlay'            => $cover_overlay,
+	);
+}
+
 function oldbook_get_update_types() {
 	return array(
 		'text' => array(
@@ -48,12 +189,7 @@ function oldbook_get_articles_url() {
 }
 
 function oldbook_get_profile_image_url($size = 96) {
-	$logo_id  = (int) get_theme_mod('custom_logo');
-	$image_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'thumbnail') : '';
-
-	if (! $image_url && $logo_id) {
-		$image_url = wp_get_attachment_url($logo_id);
-	}
+	$image_url = oldbook_get_site_logo_url('thumbnail');
 
 	if (! $image_url && function_exists('get_site_icon_url')) {
 		$image_url = get_site_icon_url(absint($size));

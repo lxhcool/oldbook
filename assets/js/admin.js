@@ -42,6 +42,28 @@
 		});
 	}
 
+	function syncGradientFields() {
+		var gradientInput = document.querySelector('[data-oldbook-picker-input="cover-gradient"]');
+		var gradientFields = document.querySelector('[data-oldbook-gradient-fields]');
+		var enabled = gradientInput && '1' === gradientInput.value;
+
+		if (!gradientFields) {
+			return;
+		}
+
+		gradientFields.classList.toggle('is-enabled', enabled);
+	}
+
+	function syncRangeOutputs() {
+		document.querySelectorAll('[data-oldbook-range]').forEach(function (input) {
+			var output = document.querySelector('[data-oldbook-range-output="' + input.id + '"]');
+
+			if (output) {
+				output.textContent = input.value + '%';
+			}
+		});
+	}
+
 	document.querySelectorAll('[data-oldbook-picker]').forEach(function (option) {
 		option.addEventListener('click', function () {
 			var group = option.getAttribute('data-oldbook-picker');
@@ -55,6 +77,10 @@
 
 			if ('media-source' === group) {
 				syncMediaSource();
+			}
+
+			if ('cover-gradient' === group) {
+				syncGradientFields();
 			}
 		});
 
@@ -88,6 +114,10 @@
 		});
 	});
 
+	document.querySelectorAll('[data-oldbook-range]').forEach(function (input) {
+		input.addEventListener('input', syncRangeOutputs);
+	});
+
 	document.querySelectorAll('.oldbook-admin-danger').forEach(function (button) {
 		button.addEventListener('click', function (event) {
 			if (!window.confirm('确定删除这项内容吗？')) {
@@ -98,4 +128,6 @@
 
 	syncConditionalFields();
 	syncMediaSource();
+	syncGradientFields();
+	syncRangeOutputs();
 }());

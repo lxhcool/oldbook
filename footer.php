@@ -9,11 +9,9 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-$site_name     = get_bloginfo('name');
-$site_name     = $site_name ? $site_name : 'oldbook';
-$site_tagline  = get_bloginfo('description');
-$site_tagline  = $site_tagline ? $site_tagline : __('动态记录', 'oldbook');
-$footer_items  = array(
+$site_name    = oldbook_get_site_title();
+$site_tagline = oldbook_get_site_tagline();
+$footer_items = array(
 	array(
 		'label' => __('动态', 'oldbook'),
 		'url'   => home_url('/'),
@@ -42,8 +40,8 @@ $recent_posts = get_posts(
 	<footer class="oldbook-footer">
 		<div class="oldbook-footer__inner">
 			<div class="oldbook-footer__identity">
-				<a class="oldbook-topbar__brand" href="<?php echo esc_url(home_url('/')); ?>">
-					<span class="oldbook-topbar__mark" aria-hidden="true"><?php echo esc_html(mb_substr($site_name, 0, 1)); ?></span>
+				<a class="oldbook-brand" href="<?php echo esc_url(home_url('/')); ?>">
+					<span class="oldbook-brand__mark" aria-hidden="true"><?php echo esc_html(mb_substr($site_name, 0, 1)); ?></span>
 					<span><?php echo esc_html($site_name); ?></span>
 				</a>
 				<p><?php echo esc_html($site_tagline); ?></p>
