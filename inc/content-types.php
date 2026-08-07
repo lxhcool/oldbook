@@ -28,7 +28,7 @@ function oldbook_register_content_types() {
 				'with_front' => false,
 			),
 			'menu_icon'           => 'dashicons-format-status',
-			'supports'            => array('title'),
+			'supports'            => array('title', 'comments'),
 			'capability_type'     => 'post',
 			'map_meta_cap'        => true,
 			'query_var'           => true,
@@ -63,7 +63,7 @@ function oldbook_register_content_types() {
 add_action('init', 'oldbook_register_content_types');
 
 function oldbook_maybe_flush_rewrites() {
-	$version = '1';
+	$version = '2';
 
 	if ($version !== get_option('oldbook_rewrite_version')) {
 		flush_rewrite_rules();
@@ -82,3 +82,32 @@ function oldbook_deactivate_content_types() {
 	flush_rewrite_rules();
 }
 add_action('switch_theme', 'oldbook_deactivate_content_types');
+
+function oldbook_register_article_route() {
+	add_rewrite_rule('^articles/?$', 'index.php?oldbook_articles=1', 'top');
+}
+add_action('init', 'oldbook_register_article_route', 20);
+
+function oldbook_add_article_query_var($vars) {
+	$vars[] = 'oldbook_articles';
+
+	return $vars;
+}
+add_filter('query_vars', 'oldbook_add_article_query_var');
+
+function oldbook_load_article_template($template) {
+	if (get_query_var('oldbook_articles')) {
+		return get_template_directory() . '/page-articles.php';
+	}
+
+	return $template;
+}
+add_filter('template_include', 'oldbook_load_article_template');
+
+function oldbook_redirect_update_single() {
+	if (is_singular('oldbook_update') || is_post_type_archive('oldbook_update')) {
+		wp_safe_redirect(home_url('/'), 302);
+		exit;
+	}
+}
+add_action('template_redirect', 'oldbook_redirect_update_single');

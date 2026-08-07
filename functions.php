@@ -12,6 +12,7 @@ if (! defined('ABSPATH')) {
 require_once get_template_directory() . '/inc/helpers.php';
 require_once get_template_directory() . '/inc/content-types.php';
 require_once get_template_directory() . '/inc/markdown.php';
+require_once get_template_directory() . '/inc/interactions.php';
 require_once get_template_directory() . '/inc/admin.php';
 
 function oldbook_setup() {
@@ -32,6 +33,17 @@ function oldbook_setup() {
 			'width'       => 240,
 			'flex-height' => true,
 			'flex-width'  => true,
+		)
+	);
+	add_theme_support(
+		'custom-header',
+		array(
+			'width'         => 1200,
+			'height'        => 420,
+			'flex-width'    => true,
+			'flex-height'   => true,
+			'header-text'   => false,
+			'default-image' => get_template_directory_uri() . '/assets/images/oldbook-profile-cover.jpg',
 		)
 	);
 	add_theme_support(
@@ -66,7 +78,7 @@ function oldbook_widgets_init() {
 		array(
 			'name'          => __('侧栏', 'oldbook'),
 			'id'            => 'sidebar-1',
-			'description'   => __('添加小工具，它们会显示在内容旁边。', 'oldbook'),
+			'description'   => __('添加小工具，它们会显示在右侧栏。', 'oldbook'),
 			'before_widget' => '<section id="%1$s" class="widget %2$s">',
 			'after_widget'  => '</section>',
 			'before_title'  => '<h2 class="widget-title">',
@@ -118,6 +130,16 @@ function oldbook_enqueue_styles() {
 		is_singular('post') ? array('oldbook-highlight') : array(),
 		$theme->get('Version'),
 		true
+	);
+
+	wp_localize_script(
+		'oldbook-script',
+		'oldbookInteractions',
+		array(
+			'ajaxUrl'  => admin_url('admin-ajax.php'),
+			'likeNonce' => wp_create_nonce('oldbook_like'),
+			'commentNonce' => wp_create_nonce('oldbook_comment'),
+		)
 	);
 }
 add_action('wp_enqueue_scripts', 'oldbook_enqueue_styles');

@@ -10,9 +10,8 @@ get_header();
 
 <div id="primary" class="oldbook-main">
 	<header class="page-header">
-		<p class="eyebrow"><?php esc_html_e('归档', 'oldbook'); ?></p>
-		<?php the_archive_title('<h1 class="page-title">', '</h1>'); ?>
-		<?php the_archive_description('<div class="archive-description">', '</div>'); ?>
+		<h1 class="page-title"><?php the_archive_title(); ?></h1>
+		<?php the_archive_description('<p class="archive-description">', '</p>'); ?>
 	</header>
 
 	<?php if (have_posts()) : ?>

@@ -12,13 +12,13 @@
 			"palette": [
 				{
 					"slug": "ink",
-					"color": "#151515",
+					"color": "oklch(0.22 0.008 170)",
 					"name": "墨色"
 				},
 				{
 					"slug": "paper",
-					"color": "oklch(0.985 0.008 75)",
-					"name": "纸张"
+					"color": "oklch(0.98 0.004 165)",
+					"name": "纸面"
 				},
 				{
 					"slug": "surface",
@@ -27,29 +27,29 @@
 				},
 				{
 					"slug": "muted",
-					"color": "#686868",
+					"color": "oklch(0.5 0.012 170)",
 					"name": "次要文字"
 				},
 				{
 					"slug": "line",
-					"color": "#d6d6d6",
+					"color": "oklch(0.92 0.006 165)",
 					"name": "分隔线"
 				},
 				{
 					"slug": "accent",
-					"color": "#000000",
-					"name": "强调色"
+					"color": "oklch(0.5 0.105 160)",
+					"name": "墨绿"
 				},
 				{
 					"slug": "accent-dark",
-					"color": "#000000",
-					"name": "深色强调"
+					"color": "oklch(0.45 0.105 160)",
+					"name": "深墨绿"
 				}
 			]
 		},
 		"layout": {
-			"contentSize": "760px",
-			"wideSize": "1120px"
+			"contentSize": "680px",
+			"wideSize": "720px"
 		},
 		"spacing": {
 			"units": ["px", "em", "rem", "%", "vw", "vh"],
@@ -85,9 +85,9 @@
 					"name": "无衬线"
 				},
 				{
-					"fontFamily": "\"Songti SC\", STSong, SimSun, Georgia, \"Times New Roman\", serif",
-					"slug": "serif",
-					"name": "衬线"
+					"fontFamily": "\"SF Mono\", ui-monospace, \"SFMono-Regular\", Consolas, \"Liberation Mono\", monospace",
+					"slug": "mono",
+					"name": "等宽"
 				}
 			],
 			"fontSizes": [
@@ -117,21 +117,21 @@
 	"styles": {
 		"typography": {
 			"fontFamily": "var:preset|font-family|sans",
-			"fontSize": "1rem",
-			"lineHeight": "1.5"
+			"fontSize": "0.875rem",
+			"lineHeight": "1.7"
 		},
 		"elements": {
 			"heading": {
 				"typography": {
-					"fontFamily": "var:preset|font-family|serif",
+					"fontFamily": "var:preset|font-family|sans",
 					"fontSize": "1.25rem",
 					"fontWeight": "700",
-					"lineHeight": "1.15"
+					"lineHeight": "1.4"
 				}
 			},
 			"link": {
 				"color": {
-					"text": "var:preset|color|accent-dark"
+					"text": "var:preset|color|accent"
 				}
 			}
 		},

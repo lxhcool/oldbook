@@ -16,16 +16,19 @@ $articles = new WP_Query(
 		'paged'          => max(1, get_query_var('paged')),
 	)
 );
+
+$articles_title = get_query_var('oldbook_articles') ? __('文章', 'oldbook') : get_the_title();
+$articles_title = $articles_title ? $articles_title : __('文章', 'oldbook');
 ?>
 
 <main id="primary" class="oldbook-main oldbook-page oldbook-page--articles">
 	<header class="page-header">
+		<h1 class="page-title"><?php echo esc_html($articles_title); ?></h1>
 		<p class="eyebrow"><?php esc_html_e('文章', 'oldbook'); ?></p>
-		<h1 class="page-title"><?php the_title(); ?></h1>
 	</header>
 
 	<?php if ($articles->have_posts()) : ?>
-		<div class="content-list">
+		<div class="content-list content-list--grid">
 			<?php while ($articles->have_posts()) : $articles->the_post(); ?>
 				<?php get_template_part('template-parts/content', get_post_type()); ?>
 			<?php endwhile; ?>

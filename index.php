@@ -11,8 +11,8 @@ get_header();
 <div id="primary" class="oldbook-main">
 	<?php if (is_home() && ! is_front_page()) : ?>
 		<header class="page-header">
-			<p class="eyebrow"><?php esc_html_e('文章', 'oldbook'); ?></p>
 			<h1 class="page-title"><?php single_post_title(); ?></h1>
+			<p class="eyebrow"><?php esc_html_e('文章', 'oldbook'); ?></p>
 		</header>
 	<?php endif; ?>
 

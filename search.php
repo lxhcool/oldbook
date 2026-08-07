@@ -10,7 +10,6 @@ get_header();
 
 <div id="primary" class="oldbook-main">
 	<header class="page-header">
-		<p class="eyebrow"><?php esc_html_e('搜索', 'oldbook'); ?></p>
 		<h1 class="page-title">
 			<?php
 			printf(
@@ -19,6 +18,7 @@ get_header();
 			);
 			?>
 		</h1>
+		<p class="eyebrow"><?php esc_html_e('搜索', 'oldbook'); ?></p>
 	</header>
 
 	<?php if (have_posts()) : ?>

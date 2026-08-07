@@ -37,6 +37,31 @@ function oldbook_get_link_groups() {
 	);
 }
 
+function oldbook_get_articles_url() {
+	$posts_page_id = (int) get_option('page_for_posts');
+
+	if ($posts_page_id) {
+		return get_permalink($posts_page_id);
+	}
+
+	return home_url('/articles/');
+}
+
+function oldbook_get_profile_image_url($size = 96) {
+	$logo_id  = (int) get_theme_mod('custom_logo');
+	$image_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'thumbnail') : '';
+
+	if (! $image_url && $logo_id) {
+		$image_url = wp_get_attachment_url($logo_id);
+	}
+
+	if (! $image_url && function_exists('get_site_icon_url')) {
+		$image_url = get_site_icon_url(absint($size));
+	}
+
+	return $image_url ? $image_url : '';
+}
+
 function oldbook_get_update_type($post_id = 0) {
 	$post_id = $post_id ? absint($post_id) : get_the_ID();
 	$type    = sanitize_key((string) get_post_meta($post_id, '_oldbook_update_type', true));
@@ -181,17 +206,24 @@ function oldbook_icon($name, $class = '') {
 		'chevron-down'   => '<path d="m6 9 6 6 6-6"/>',
 		'edit'           => '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
 		'external'       => '<path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>',
+		'heart'          => '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/>',
 		'link'           => '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+		'menu'           => '<path d="M4 7h16M4 12h16M4 17h16"/>',
+		'message-circle' => '<path d="M21 11.5a8.38 8.38 0 0 1-9 8.5 8.5 8.5 0 0 1-3.7-.84L3 21l1.84-4.3A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
+		'moon'           => '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>',
 		'music'          => '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
 		'pause'          => '<path d="M7 4v16M17 4v16"/>',
 		'photo'          => '<rect x="3" y="4" width="18" height="16" rx="1"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
 		'play'           => '<path d="m8 5 11 7-11 7Z"/>',
 		'plus'           => '<path d="M12 5v14M5 12h14"/>',
 		'search'         => '<circle cx="11" cy="11" r="6"/><path d="m16 16 4.5 4.5"/>',
+		'send'           => '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+		'sun'            => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>',
 		'text'           => '<path d="M4 6h16M4 12h16M4 18h10"/>',
 		'trash'          => '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/>',
 		'video'          => '<rect x="3" y="5" width="13" height="14" rx="1"/><path d="m16 10 5-3v10l-5-3Z"/>',
 		'volume'         => '<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a9 9 0 0 1 0 12"/>',
+		'x'              => '<path d="M18 6 6 18M6 6l12 12"/>',
 	);
 
 	if (! isset($paths[$name])) {
@@ -200,7 +232,30 @@ function oldbook_icon($name, $class = '') {
 
 	$class = $class ? ' ' . sanitize_html_class($class) : '';
 
-	return '<svg class="oldbook-icon' . esc_attr($class) . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[$name] . '</svg>';
+	return '<svg class="oldbook-icon' . esc_attr($class) . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[$name] . '</svg>';
+}
+
+function oldbook_get_site_stats() {
+	$counts = wp_count_posts('post');
+	$updates = wp_count_posts('oldbook_update');
+	$links = wp_count_posts('oldbook_link');
+
+	return array(
+		'updates' => absint(isset($updates->publish) ? $updates->publish : 0),
+		'posts'   => absint(isset($counts->publish) ? $counts->publish : 0),
+		'links'   => absint(isset($links->publish) ? $links->publish : 0),
+	);
+}
+
+function oldbook_next_stagger() {
+	if (! isset($GLOBALS['oldbook_stagger'])) {
+		$GLOBALS['oldbook_stagger'] = 0;
+	}
+
+	$index = min($GLOBALS['oldbook_stagger'], 8);
+	$GLOBALS['oldbook_stagger']++;
+
+	return $index;
 }
 
 function oldbook_render_plain_text($text) {

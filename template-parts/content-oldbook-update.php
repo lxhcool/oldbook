@@ -1,6 +1,6 @@
 <?php
 /**
- * A single dynamic item.
+ * A single dynamic item — featured (full) or compact (row) layout.
  *
  * @package oldbook
  */
@@ -11,109 +11,138 @@ $type_data     = oldbook_get_update_types();
 $title         = get_the_title();
 $default_title = oldbook_default_update_title($type);
 $content       = get_post_field('post_content', $post_id);
-$is_single     = is_singular('oldbook_update');
+$variant       = isset($args['variant']) && 'compact' === $args['variant'] ? 'compact' : 'featured';
 ?>
 
-<article id="post-<?php the_ID(); ?>" <?php post_class('oldbook-update oldbook-update--' . $type . ($is_single ? ' oldbook-update--single' : '')); ?>>
-	<?php if (! $is_single) : ?>
-		<div class="oldbook-update__marker" aria-hidden="true">
-			<span><?php echo esc_html(get_the_date('m')); ?></span>
-			<strong><?php echo esc_html(get_the_date('d')); ?></strong>
-		</div>
-	<?php endif; ?>
-	<div class="oldbook-update__body">
-	<header class="oldbook-update__header">
-		<div class="oldbook-update__meta">
-			<time datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('Y年n月j日 H:i')); ?></time>
-			<span class="oldbook-update__type">
-				<span class="oldbook-update__type-icon"><?php echo oldbook_icon($type_data[$type]['icon']); ?></span>
-				<?php echo esc_html(oldbook_get_update_type_label($type)); ?>
-			</span>
-		</div>
-		<?php if ($title && ($is_single || $title !== $default_title)) : ?>
-			<?php if ($is_single) : ?>
-				<h1 class="oldbook-update__title"><?php echo esc_html($title); ?></h1>
-			<?php else : ?>
-				<h2 class="oldbook-update__title"><a href="<?php echo esc_url(get_permalink()); ?>"><?php echo esc_html($title); ?></a></h2>
-			<?php endif; ?>
-		<?php endif; ?>
-	</header>
+<?php if ('compact' === $variant) : ?>
+	<article id="post-<?php the_ID(); ?>" <?php post_class('oldbook-update oldbook-update--compact oldbook-update--' . $type); ?> style="--i: <?php echo esc_attr(oldbook_next_stagger()); ?>">
+		<time class="oldbook-update__rowtime" datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('m.d')); ?></time>
 
-	<?php if ('text' === $type) : ?>
-		<div class="oldbook-update__text">
-			<?php echo oldbook_render_plain_text($content); ?>
-		</div>
-	<?php elseif (in_array($type, array('music', 'video'), true)) : ?>
-		<?php $media_url = oldbook_get_update_media_url($post_id, $type); ?>
-		<?php $media_source_url = oldbook_clean_url(get_post_meta($post_id, '_oldbook_media_url', true)); ?>
-		<?php if ($media_url) : ?>
-			<?php if ('music' === $type) : ?>
-				<div class="oldbook-player oldbook-player--audio" data-oldbook-player>
-					<audio class="oldbook-player__media" preload="metadata" src="<?php echo esc_url($media_url); ?>"></audio>
-					<div class="oldbook-player__row">
-						<button class="oldbook-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放音频', 'oldbook'); ?>" title="<?php esc_attr_e('播放音频', 'oldbook'); ?>">
+		<div class="oldbook-update__rowbody">
+			<?php if ('text' === $type) : ?>
+				<span class="oldbook-update__type"><?php echo oldbook_icon($type_data[$type]['icon']); ?><?php echo esc_html(oldbook_get_update_type_label($type)); ?></span>
+				<span class="oldbook-update__preview"><?php echo esc_html(wp_trim_words(wp_strip_all_tags($content), 24, '...')); ?></span>
+			<?php elseif ('photo' === $type) : ?>
+				<?php $photo_ids = oldbook_get_photo_ids($post_id); ?>
+				<?php $first_photo = $photo_ids ? wp_get_attachment_image_url($photo_ids[0], 'thumbnail') : ''; ?>
+				<?php if ($first_photo) : ?>
+					<span class="oldbook-update__rowthumb" aria-hidden="true">
+						<img src="<?php echo esc_url($first_photo); ?>" alt="" loading="lazy">
+					</span>
+				<?php endif; ?>
+				<span class="oldbook-update__type"><?php echo oldbook_icon($type_data[$type]['icon']); ?><?php echo esc_html(oldbook_get_update_type_label($type)); ?></span>
+				<span class="oldbook-update__preview"><?php echo esc_html(sprintf(_n('%d 张图片', '%d 张图片', count($photo_ids), 'oldbook'), count($photo_ids))); ?></span>
+			<?php else : ?>
+				<?php $media_url = oldbook_get_update_media_url($post_id, $type); ?>
+				<?php if ($media_url) : ?>
+					<div class="oldbook-mini-player" data-oldbook-player>
+						<?php if ('music' === $type) : ?>
+							<audio class="oldbook-player__media" preload="none" src="<?php echo esc_url($media_url); ?>"></audio>
+						<?php else : ?>
+							<video class="oldbook-player__media" preload="none" playsinline src="<?php echo esc_url($media_url); ?>"></video>
+						<?php endif; ?>
+						<button class="oldbook-mini-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放', 'oldbook'); ?>" title="<?php esc_attr_e('播放', 'oldbook'); ?>">
 							<?php echo oldbook_icon('play'); ?>
 						</button>
-						<div class="oldbook-player__body">
-							<div class="oldbook-player__label">
-								<strong><?php echo esc_html($title && $title !== $default_title ? $title : __('音乐动态', 'oldbook')); ?></strong>
-								<span data-oldbook-player-state><?php esc_html_e('就绪', 'oldbook'); ?></span>
+						<strong class="oldbook-mini-player__label"><?php echo esc_html($title && $title !== $default_title ? $title : oldbook_get_update_type_label($type)); ?></strong>
+						<span class="oldbook-mini-player__times"><span data-oldbook-player-current>0:00</span><span data-oldbook-player-duration>--:--</span></span>
+					</div>
+				<?php else : ?>
+					<span class="oldbook-update__type"><?php echo oldbook_icon($type_data[$type]['icon']); ?><?php echo esc_html(oldbook_get_update_type_label($type)); ?></span>
+					<span class="oldbook-update__preview"><?php echo esc_html(wp_trim_words(wp_strip_all_tags($content), 24, '...')); ?></span>
+				<?php endif; ?>
+			<?php endif; ?>
+		</div>
+
+		<div class="oldbook-update__rowactions">
+			<?php echo oldbook_render_update_social($post_id, true); ?>
+		</div>
+	</article>
+<?php else : ?>
+	<article id="post-<?php the_ID(); ?>" <?php post_class('oldbook-update oldbook-update--featured oldbook-update--' . $type); ?> style="--i: <?php echo esc_attr(oldbook_next_stagger()); ?>">
+		<div class="oldbook-update__frame">
+			<header class="oldbook-update__header">
+				<div class="oldbook-update__meta">
+					<span class="oldbook-update__type">
+						<span class="oldbook-update__type-icon"><?php echo oldbook_icon($type_data[$type]['icon']); ?></span>
+						<?php echo esc_html(oldbook_get_update_type_label($type)); ?>
+					</span>
+					<time class="oldbook-update__time" datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('m.d H:i')); ?></time>
+				</div>
+				<?php if ($title && $title !== $default_title) : ?>
+					<h2 class="oldbook-update__title"><?php echo esc_html($title); ?></h2>
+				<?php endif; ?>
+			</header>
+
+			<?php if ('text' === $type) : ?>
+				<div class="oldbook-update__text">
+					<?php echo oldbook_render_plain_text($content); ?>
+				</div>
+			<?php elseif (in_array($type, array('music', 'video'), true)) : ?>
+				<?php $media_url = oldbook_get_update_media_url($post_id, $type); ?>
+				<?php $media_source_url = oldbook_clean_url(get_post_meta($post_id, '_oldbook_media_url', true)); ?>
+				<?php if ($media_url) : ?>
+					<?php if ('music' === $type) : ?>
+						<div class="oldbook-player oldbook-player--audio" data-oldbook-player>
+							<audio class="oldbook-player__media" preload="metadata" src="<?php echo esc_url($media_url); ?>"></audio>
+							<div class="oldbook-player__row">
+								<button class="oldbook-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放音频', 'oldbook'); ?>" title="<?php esc_attr_e('播放音频', 'oldbook'); ?>">
+									<?php echo oldbook_icon('play'); ?>
+								</button>
+								<div class="oldbook-player__body">
+									<div class="oldbook-player__label">
+										<strong><?php echo esc_html($title && $title !== $default_title ? $title : __('音乐动态', 'oldbook')); ?></strong>
+										<span data-oldbook-player-state><?php esc_html_e('就绪', 'oldbook'); ?></span>
+									</div>
+									<input class="oldbook-player__progress" type="range" min="0" max="100" value="0" step="0.1" data-oldbook-player-progress aria-label="<?php esc_attr_e('音频进度', 'oldbook'); ?>">
+									<div class="oldbook-player__times"><span data-oldbook-player-current>0:00</span><span data-oldbook-player-duration>--:--</span></div>
+								</div>
 							</div>
-							<input class="oldbook-player__progress" type="range" min="0" max="100" value="0" step="0.1" data-oldbook-player-progress aria-label="<?php esc_attr_e('音频进度', 'oldbook'); ?>">
-							<div class="oldbook-player__times"><span data-oldbook-player-current>0:00</span><span data-oldbook-player-duration>--:--</span></div>
 						</div>
-					</div>
-				</div>
-			<?php else : ?>
-				<div class="oldbook-player oldbook-player--video" data-oldbook-player>
-					<div class="oldbook-player__video-frame">
-						<video class="oldbook-player__media" preload="metadata" playsinline src="<?php echo esc_url($media_url); ?>"></video>
-						<button class="oldbook-player__video-toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放视频', 'oldbook'); ?>" title="<?php esc_attr_e('播放视频', 'oldbook'); ?>">
-							<?php echo oldbook_icon('play'); ?>
-						</button>
-					</div>
-					<div class="oldbook-player__video-controls">
-						<button class="oldbook-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放视频', 'oldbook'); ?>" title="<?php esc_attr_e('播放视频', 'oldbook'); ?>">
-							<?php echo oldbook_icon('play'); ?>
-						</button>
-						<input class="oldbook-player__progress" type="range" min="0" max="100" value="0" step="0.1" data-oldbook-player-progress aria-label="<?php esc_attr_e('视频进度', 'oldbook'); ?>">
-						<div class="oldbook-player__times"><span data-oldbook-player-current>0:00</span><span data-oldbook-player-duration>--:--</span></div>
-					</div>
-				</div>
-			<?php endif; ?>
-		<?php endif; ?>
-		<?php if ($media_source_url) : ?>
-			<p class="oldbook-player__source"><a href="<?php echo esc_url($media_source_url); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('打开媒体来源', 'oldbook'); ?><?php echo oldbook_icon('external'); ?></a></p>
-		<?php endif; ?>
-		<?php if (trim($content)) : ?>
-			<div class="oldbook-update__note"><?php echo oldbook_render_plain_text($content); ?></div>
-		<?php endif; ?>
-	<?php elseif ('photo' === $type) : ?>
-		<?php $photo_ids = oldbook_get_photo_ids($post_id); ?>
-		<?php if ($photo_ids) : ?>
-			<div class="oldbook-photo-grid oldbook-photo-grid--count-<?php echo esc_attr(min(9, count($photo_ids))); ?>">
-				<?php foreach (array_slice($photo_ids, 0, 9) as $photo_id) : ?>
-					<?php $full_url = wp_get_attachment_image_url($photo_id, 'full'); ?>
-					<?php if ($full_url) : ?>
-						<a class="oldbook-photo-grid__item" href="<?php echo esc_url($full_url); ?>">
-							<?php echo wp_get_attachment_image($photo_id, 'large', false, array('loading' => 'lazy', 'alt' => get_post_meta($photo_id, '_wp_attachment_image_alt', true))); ?>
-						</a>
+					<?php else : ?>
+						<div class="oldbook-player oldbook-player--video" data-oldbook-player>
+							<div class="oldbook-player__video-frame">
+								<video class="oldbook-player__media" preload="metadata" playsinline src="<?php echo esc_url($media_url); ?>"></video>
+								<button class="oldbook-player__video-toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放视频', 'oldbook'); ?>" title="<?php esc_attr_e('播放视频', 'oldbook'); ?>">
+									<?php echo oldbook_icon('play'); ?>
+								</button>
+							</div>
+							<div class="oldbook-player__video-controls">
+								<button class="oldbook-player__toggle" type="button" data-oldbook-player-toggle aria-label="<?php esc_attr_e('播放视频', 'oldbook'); ?>" title="<?php esc_attr_e('播放视频', 'oldbook'); ?>">
+									<?php echo oldbook_icon('play'); ?>
+								</button>
+								<input class="oldbook-player__progress" type="range" min="0" max="100" value="0" step="0.1" data-oldbook-player-progress aria-label="<?php esc_attr_e('视频进度', 'oldbook'); ?>">
+								<div class="oldbook-player__times"><span data-oldbook-player-current>0:00</span><span data-oldbook-player-duration>--:--</span></div>
+							</div>
+						</div>
 					<?php endif; ?>
-				<?php endforeach; ?>
-			</div>
-		<?php endif; ?>
-		<?php if (trim($content)) : ?>
-			<div class="oldbook-update__note"><?php echo oldbook_render_plain_text($content); ?></div>
-		<?php endif; ?>
-	<?php endif; ?>
+				<?php endif; ?>
+				<?php if ($media_source_url) : ?>
+					<p class="oldbook-player__source"><a href="<?php echo esc_url($media_source_url); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('打开媒体来源', 'oldbook'); ?><?php echo oldbook_icon('external'); ?></a></p>
+				<?php endif; ?>
+				<?php if (trim($content)) : ?>
+					<div class="oldbook-update__note"><?php echo oldbook_render_plain_text($content); ?></div>
+				<?php endif; ?>
+			<?php elseif ('photo' === $type) : ?>
+				<?php $photo_ids = oldbook_get_photo_ids($post_id); ?>
+				<?php if ($photo_ids) : ?>
+					<div class="oldbook-photo-grid oldbook-photo-grid--count-<?php echo esc_attr(min(9, count($photo_ids))); ?>">
+						<?php foreach (array_slice($photo_ids, 0, 9) as $photo_id) : ?>
+							<?php $full_url = wp_get_attachment_image_url($photo_id, 'full'); ?>
+							<?php if ($full_url) : ?>
+								<a class="oldbook-photo-grid__item" href="<?php echo esc_url($full_url); ?>">
+									<?php echo wp_get_attachment_image($photo_id, 'large', false, array('loading' => 'lazy', 'alt' => get_post_meta($photo_id, '_wp_attachment_image_alt', true))); ?>
+								</a>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+				<?php if (trim($content)) : ?>
+					<div class="oldbook-update__note"><?php echo oldbook_render_plain_text($content); ?></div>
+				<?php endif; ?>
+			<?php endif; ?>
 
-	<?php if (! $is_single) : ?>
-		<footer class="oldbook-update__footer">
-			<a href="<?php echo esc_url(get_permalink()); ?>">
-				<?php esc_html_e('查看动态', 'oldbook'); ?>
-				<?php echo oldbook_icon('arrow-up-right'); ?>
-			</a>
-		</footer>
-	<?php endif; ?>
-	</div>
-</article>
+			<?php echo oldbook_render_update_social($post_id); ?>
+		</div>
+	</article>
+<?php endif; ?>

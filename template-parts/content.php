@@ -1,18 +1,12 @@
 <?php
 /**
- * Default post content.
+ * Default post content — typographic rows in the list, reading view in single.
  *
  * @package oldbook
  */
 ?>
 
-<article id="post-<?php the_ID(); ?>" <?php post_class('entry' . (is_singular() ? ' entry--single' : '')); ?>>
-	<?php if (! is_singular()) : ?>
-		<div class="entry-marker" aria-hidden="true">
-			<span class="entry-marker__month"><?php echo esc_html(get_the_date('m')); ?></span>
-			<strong><?php echo esc_html(get_the_date('d')); ?></strong>
-		</div>
-	<?php endif; ?>
+<article id="post-<?php the_ID(); ?>" <?php post_class('entry' . (is_singular() ? ' entry--single' : '')); ?> style="--i: <?php echo esc_attr(is_singular() ? 0 : oldbook_next_stagger()); ?>">
 	<div class="entry-body">
 	<header class="entry-header">
 		<?php if (! is_singular()) : ?>

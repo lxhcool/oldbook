@@ -1,6 +1,6 @@
 <?php
 /**
- * The right column for widgets.
+ * The right rail: widget area with curated fallbacks.
  *
  * @package oldbook
  */
@@ -8,99 +8,147 @@
 if (! defined('ABSPATH')) {
 	exit;
 }
+
+$recent_posts = get_posts(
+	array(
+		'post_type'      => 'post',
+		'post_status'    => 'publish',
+		'posts_per_page' => 4,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+	)
+);
+
+$categories = get_categories(
+	array(
+		'hide_empty' => true,
+		'number'     => 8,
+	)
+);
+
+$recent_links = get_posts(
+	array(
+		'post_type'      => 'oldbook_link',
+		'post_status'    => 'publish',
+		'posts_per_page' => 4,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+	)
+);
+
+$site_name    = get_bloginfo('name');
+$site_name    = $site_name ? $site_name : 'oldbook';
+$site_tagline = get_bloginfo('description');
+$site_tagline = $site_tagline ? $site_tagline : __('动态记录', 'oldbook');
+$profile_image_url = oldbook_get_profile_image_url(128);
+$site_stats   = oldbook_get_site_stats();
 ?>
-	<?php
-	$article_url = get_post_type_archive_link('post');
-
-	if (! $article_url) {
-		$posts_page_id = (int) get_option('page_for_posts');
-		$article_url   = $posts_page_id ? get_permalink($posts_page_id) : home_url('/');
-	}
-
-	$article_context = (is_home() && ! is_front_page()) || is_singular('post') || is_category() || is_tag() || is_post_type_archive('post');
-	$nav_items       = array(
-		array(
-			'label'   => __('首页', 'oldbook'),
-			'url'     => home_url('/'),
-			'current' => is_front_page() || (is_home() && ! get_option('page_for_posts')),
-		),
-		array(
-			'label'   => __('文章', 'oldbook'),
-			'url'     => $article_url,
-			'current' => $article_context,
-		),
-		array(
-			'label'   => __('动态', 'oldbook'),
-			'url'     => get_post_type_archive_link('oldbook_update'),
-			'current' => is_post_type_archive('oldbook_update') || is_singular('oldbook_update'),
-		),
-		array(
-			'label'   => __('书签', 'oldbook'),
-			'url'     => get_post_type_archive_link('oldbook_link'),
-			'current' => is_post_type_archive('oldbook_link') || is_singular('oldbook_link'),
-		),
-	);
-	?>
-
-	<aside class="oldbook-sidebar" aria-label="<?php esc_attr_e('侧栏', 'oldbook'); ?>">
-		<section class="oldbook-sidebar__intro">
-			<p class="oldbook-sidebar__brand">oldbook</p>
-			<p class="oldbook-sidebar__tagline"><?php esc_html_e('把值得留下的内容放在这里。', 'oldbook'); ?></p>
-		</section>
-
-		<nav class="widget oldbook-sidebar__navigation" aria-label="<?php esc_attr_e('站点导航', 'oldbook'); ?>">
-			<h2 class="widget-title"><?php esc_html_e('浏览', 'oldbook'); ?></h2>
-			<ul>
-				<?php foreach ($nav_items as $nav_item) : ?>
-					<?php if (! $nav_item['url']) : ?>
-						<?php continue; ?>
-					<?php endif; ?>
-					<li class="<?php echo $nav_item['current'] ? 'is-current' : ''; ?>">
-						<a href="<?php echo esc_url($nav_item['url']); ?>"<?php echo $nav_item['current'] ? ' aria-current="page"' : ''; ?>>
-							<span><?php echo esc_html($nav_item['label']); ?></span>
-							<span class="oldbook-sidebar__arrow" aria-hidden="true"><?php echo oldbook_icon('arrow-right'); ?></span>
-						</a>
-					</li>
-				<?php endforeach; ?>
-			</ul>
-		</nav>
 
 		<?php if (is_active_sidebar('sidebar-1')) : ?>
-			<div class="oldbook-sidebar__widgets">
+			<aside class="oldbook-sidebar" aria-label="<?php esc_attr_e('侧栏', 'oldbook'); ?>">
 				<?php dynamic_sidebar('sidebar-1'); ?>
-			</div>
+			</aside>
 		<?php else : ?>
-			<section class="widget oldbook-sidebar__search">
-				<h2 class="widget-title"><?php esc_html_e('搜索', 'oldbook'); ?></h2>
-				<?php get_search_form(); ?>
-			</section>
+			<aside class="oldbook-sidebar" aria-label="<?php esc_attr_e('侧栏', 'oldbook'); ?>">
+				<section class="oldbook-sidebar__panel oldbook-sidebar__identity">
+					<div class="oldbook-sidebar__identity-top">
+						<div class="oldbook-sidebar__avatar" aria-hidden="true">
+							<?php if ($profile_image_url) : ?>
+								<img src="<?php echo esc_url($profile_image_url); ?>" alt="">
+							<?php else : ?>
+								<span><?php echo esc_html(mb_substr($site_name, 0, 1)); ?></span>
+							<?php endif; ?>
+						</div>
+						<div>
+							<h2 class="oldbook-sidebar__name"><?php echo esc_html($site_name); ?></h2>
+							<p class="oldbook-sidebar__tagline"><?php echo esc_html($site_tagline); ?></p>
+						</div>
+					</div>
+					<dl class="oldbook-sidebar__stats">
+						<div>
+							<dt><?php esc_html_e('动态', 'oldbook'); ?></dt>
+							<dd><?php echo esc_html(number_format_i18n($site_stats['updates'])); ?></dd>
+						</div>
+						<div>
+							<dt><?php esc_html_e('文章', 'oldbook'); ?></dt>
+							<dd><?php echo esc_html(number_format_i18n($site_stats['posts'])); ?></dd>
+						</div>
+						<div>
+							<dt><?php esc_html_e('书签', 'oldbook'); ?></dt>
+							<dd><?php echo esc_html(number_format_i18n($site_stats['links'])); ?></dd>
+						</div>
+					</dl>
+				</section>
+				<section class="oldbook-sidebar__panel">
+					<h2 class="oldbook-sidebar__title"><?php esc_html_e('文章目录', 'oldbook'); ?></h2>
+					<?php if ($recent_posts) : ?>
+						<ol class="oldbook-sidebar__recent">
+							<?php $index = 0; ?>
+							<?php foreach ($recent_posts as $recent_post) : ?>
+								<?php $index++; ?>
+								<li>
+									<a href="<?php echo esc_url(get_permalink($recent_post)); ?>">
+										<span class="oldbook-index" aria-hidden="true"><?php echo esc_html(str_pad((string) $index, 3, '0', STR_PAD_LEFT)); ?></span>
+										<span class="oldbook-sidebar__recent-body">
+											<?php echo esc_html(get_the_title($recent_post)); ?>
+											<time datetime="<?php echo esc_attr(get_the_date(DATE_W3C, $recent_post)); ?>"><?php echo esc_html(get_the_date('Y.m.d', $recent_post)); ?></time>
+										</span>
+									</a>
+								</li>
+							<?php endforeach; ?>
+						</ol>
+					<?php else : ?>
+						<p class="oldbook-empty-inline"><?php esc_html_e('还没有文章。', 'oldbook'); ?></p>
+					<?php endif; ?>
+				</section>
 
-			<?php
-			$recent_posts = get_posts(
-				array(
-					'post_type'      => 'post',
-					'post_status'    => 'publish',
-					'posts_per_page' => 4,
-					'orderby'        => 'date',
-					'order'          => 'DESC',
-				)
-			);
-			?>
-
-			<section class="widget oldbook-sidebar__recent">
-				<h2 class="widget-title"><?php esc_html_e('最近文章', 'oldbook'); ?></h2>
-				<?php if ($recent_posts) : ?>
-					<ul>
-						<?php foreach ($recent_posts as $recent_post) : ?>
-							<li>
-								<a href="<?php echo esc_url(get_permalink($recent_post)); ?>"><?php echo esc_html(get_the_title($recent_post)); ?></a>
-								<time datetime="<?php echo esc_attr(get_the_date(DATE_W3C, $recent_post)); ?>"><?php echo esc_html(get_the_date('Y.m.d', $recent_post)); ?></time>
-							</li>
-						<?php endforeach; ?>
-					</ul>
-				<?php else : ?>
-					<p class="oldbook-empty-inline"><?php esc_html_e('还没有文章。', 'oldbook'); ?></p>
+				<?php if ($categories) : ?>
+					<section class="oldbook-sidebar__panel">
+						<h2 class="oldbook-sidebar__title"><?php esc_html_e('文章分类', 'oldbook'); ?></h2>
+						<ul class="oldbook-sidebar__cats">
+							<?php foreach ($categories as $category) : ?>
+								<li>
+									<a href="<?php echo esc_url(get_category_link($category)); ?>">
+										<?php echo esc_html($category->name); ?>
+										<span><?php echo esc_html(number_format_i18n($category->count)); ?></span>
+									</a>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					</section>
 				<?php endif; ?>
-			</section>
+
+				<?php if ($recent_links) : ?>
+					<section class="oldbook-sidebar__panel">
+						<h2 class="oldbook-sidebar__title"><?php esc_html_e('新收录书签', 'oldbook'); ?></h2>
+						<ul class="oldbook-sidebar__links">
+							<?php foreach ($recent_links as $link) : ?>
+								<?php
+								$link_url      = oldbook_get_link_url($link->ID);
+								$link_icon_url = oldbook_get_link_icon_url($link->ID);
+								$link_host     = $link_url ? wp_parse_url($link_url, PHP_URL_HOST) : '';
+								?>
+								<?php if (! $link_url) : ?>
+									<?php continue; ?>
+								<?php endif; ?>
+								<li>
+									<a href="<?php echo esc_url($link_url); ?>" target="_blank" rel="noopener noreferrer">
+										<span class="oldbook-link-favicon">
+											<?php if ($link_icon_url) : ?>
+												<img src="<?php echo esc_url($link_icon_url); ?>" alt="" width="30" height="30" loading="lazy">
+											<?php else : ?>
+												<?php echo oldbook_icon('link'); ?>
+											<?php endif; ?>
+										</span>
+										<span>
+											<?php echo esc_html(get_the_title($link)); ?>
+											<small><?php echo esc_html($link_host); ?></small>
+										</span>
+									</a>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					</section>
+				<?php endif; ?>
+			</aside>
 		<?php endif; ?>
-	</aside>

@@ -10,9 +10,8 @@ get_header();
 
 <main id="primary" class="oldbook-main oldbook-page oldbook-page--dynamics">
 	<header class="page-header">
-		<p class="eyebrow"><?php esc_html_e('动态', 'oldbook'); ?></p>
 		<h1 class="page-title"><?php esc_html_e('动态', 'oldbook'); ?></h1>
-		<p class="archive-description"><?php esc_html_e('记录文字、声音、影像和日常片段。', 'oldbook'); ?></p>
+		<p class="eyebrow"><?php esc_html_e('记录文字、声音、影像和日常片段', 'oldbook'); ?></p>
 	</header>
 
 	<?php if (have_posts()) : ?>

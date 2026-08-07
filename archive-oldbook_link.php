@@ -10,8 +10,8 @@ get_header();
 
 <main id="primary" class="oldbook-main oldbook-page oldbook-page--links">
 	<header class="page-header">
-		<p class="eyebrow"><?php esc_html_e('目录', 'oldbook'); ?></p>
 		<h1 class="page-title"><?php esc_html_e('书签', 'oldbook'); ?></h1>
+		<p class="eyebrow"><?php esc_html_e('目录', 'oldbook'); ?></p>
 		<p class="archive-description"><?php esc_html_e('值得再次访问的网页，也收录想一直关注的人。', 'oldbook'); ?></p>
 	</header>
 
