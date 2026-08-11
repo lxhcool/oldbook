@@ -122,11 +122,11 @@ function oldbook_render_update_social($post_id, $compact = false) {
 		<section class="oldbook-update__social oldbook-update__social--compact" aria-label="<?php esc_attr_e('动态互动', 'oldbook'); ?>">
 			<div class="oldbook-update__actions">
 				<button class="oldbook-update__action oldbook-like-button<?php echo $liked ? ' is-liked' : ''; ?>" type="button" data-oldbook-like data-post-id="<?php echo esc_attr($post_id); ?>" aria-pressed="<?php echo $liked ? 'true' : 'false'; ?>" aria-label="<?php echo esc_attr($like_label); ?>" title="<?php echo esc_attr($like_label); ?>">
-					<?php echo oldbook_icon('heart'); ?>
+					<?php echo oldbook_icon('thumbs-up'); ?>
 					<span data-oldbook-like-count><?php echo esc_html(number_format_i18n($like_count)); ?></span>
 				</button>
 				<span class="oldbook-update__rowcount" aria-label="<?php esc_attr_e('评论数', 'oldbook'); ?>">
-					<?php echo oldbook_icon('message-circle'); ?>
+					<?php echo oldbook_icon('message-square'); ?>
 					<span><?php echo esc_html(number_format_i18n($comment_count)); ?></span>
 				</span>
 			</div>
@@ -139,11 +139,11 @@ function oldbook_render_update_social($post_id, $compact = false) {
 	<section class="oldbook-update__social" aria-label="<?php esc_attr_e('动态互动', 'oldbook'); ?>">
 		<div class="oldbook-update__actions">
 			<button class="oldbook-update__action oldbook-like-button<?php echo $liked ? ' is-liked' : ''; ?>" type="button" data-oldbook-like data-post-id="<?php echo esc_attr($post_id); ?>" aria-pressed="<?php echo $liked ? 'true' : 'false'; ?>" aria-label="<?php echo esc_attr($like_label); ?>" title="<?php echo esc_attr($like_label); ?>">
-				<?php echo oldbook_icon('heart'); ?>
+				<?php echo oldbook_icon('thumbs-up'); ?>
 				<span data-oldbook-like-count><?php echo esc_html(number_format_i18n($like_count)); ?></span>
 			</button>
 			<button class="oldbook-update__action oldbook-comment-toggle" type="button" data-oldbook-comment-toggle aria-controls="<?php echo esc_attr($comments_id); ?>" aria-expanded="<?php echo $comments ? 'true' : 'false'; ?>" aria-label="<?php esc_attr_e('查看评论', 'oldbook'); ?>" title="<?php esc_attr_e('查看评论', 'oldbook'); ?>">
-				<?php echo oldbook_icon('message-circle'); ?>
+				<?php echo oldbook_icon('message-square'); ?>
 				<span data-oldbook-comment-count><?php echo esc_html(number_format_i18n($comment_count)); ?></span>
 			</button>
 		</div>

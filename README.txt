@@ -2,7 +2,7 @@
 Contributors: lxhcool
 Requires at least: 5.8
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 2.24.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,10 +34,11 @@ and independent management screens for non-article content.
 
 == Management ==
 
-The WordPress dashboard contains an oldbook menu with separate screens for
-site settings, publishing dynamics, editing or deleting dynamics, adding links,
-and managing the bookmark directory. Dynamics and links do not use the default
-post editor.
+The WordPress dashboard contains a single oldbook entry that opens an
+in-page console. All screens — site settings, publishing and editing
+dynamics, adding links, and managing the bookmark directory — live inside
+that page behind an in-page tab bar instead of the admin sidebar. Dynamics
+and links do not use the default post editor.
 
 == Requirements ==
 

@@ -13,6 +13,22 @@ function oldbook_sanitize_checkbox($value) {
 	return (bool) $value;
 }
 
+function oldbook_set_theme_mod($name, $value) {
+	if (function_exists('set_theme_mod')) {
+		return set_theme_mod($name, $value);
+	}
+
+	return update_theme_mod($name, $value);
+}
+
+function oldbook_remove_theme_mod($name) {
+	if (function_exists('remove_theme_mod')) {
+		return remove_theme_mod($name);
+	}
+
+	return delete_theme_mod($name);
+}
+
 function oldbook_sanitize_percentage($value) {
 	return min(100, max(0, absint($value)));
 }
@@ -73,7 +89,7 @@ function oldbook_get_site_tagline() {
 
 	$tagline = trim((string) get_bloginfo('description'));
 
-	return $tagline ? $tagline : __('动态记录', 'oldbook');
+	return $tagline ? $tagline : '';
 }
 
 function oldbook_get_site_logo_url($size = 'thumbnail') {
@@ -198,6 +214,47 @@ function oldbook_get_profile_image_url($size = 96) {
 	return $image_url ? $image_url : '';
 }
 
+function oldbook_get_default_avatar_url() {
+	$default_file = get_template_directory() . '/assets/images/oldbook-default-avatar.png';
+
+	if (file_exists($default_file)) {
+		return get_template_directory_uri() . '/assets/images/oldbook-default-avatar.png';
+	}
+
+	return '';
+}
+
+function oldbook_get_user_avatar_url($size = 96) {
+	$size = absint($size);
+
+	if (is_user_logged_in()) {
+		$url = get_avatar_url(
+			get_current_user_id(),
+			array(
+				'size'    => $size,
+				'default' => oldbook_get_default_avatar_url(),
+			)
+		);
+
+		if ($url) {
+			return $url;
+		}
+	}
+
+	return oldbook_get_default_avatar_url();
+}
+
+function oldbook_proxy_avatar_url($url, $id_or_email, $args) {
+	if (! $url || false === strpos($url, 'gravatar.com')) {
+		return $url;
+	}
+
+	$mirror = 'https://cravatar.cn/avatar/';
+
+	return $mirror . basename($url);
+}
+add_filter('get_avatar_url', 'oldbook_proxy_avatar_url', 10, 3);
+
 function oldbook_get_update_type($post_id = 0) {
 	$post_id = $post_id ? absint($post_id) : get_the_ID();
 	$type    = sanitize_key((string) get_post_meta($post_id, '_oldbook_update_type', true));
@@ -227,16 +284,58 @@ function oldbook_get_update_media_url($post_id, $type = '') {
 	}
 
 	if ('music' === $type) {
-		$host = wp_parse_url($url, PHP_URL_HOST);
+		$host  = wp_parse_url($url, PHP_URL_HOST);
 		$query = wp_parse_url($url, PHP_URL_QUERY);
 		parse_str((string) $query, $query_args);
+		$song_id = ! empty($query_args['id']) ? absint($query_args['id']) : 0;
 
-		if ($host && false !== strpos($host, 'music.163.com') && ! empty($query_args['id'])) {
-			$url = 'https://music.163.com/song/media/outer/url?id=' . rawurlencode(absint($query_args['id'])) . '.mp3';
+		if ($host && false !== strpos($host, 'music.163.com') && ! $song_id) {
+			$fragment = wp_parse_url($url, PHP_URL_FRAGMENT);
+			$fragment = strpos((string) $fragment, '?') ? substr((string) $fragment, strpos((string) $fragment, '?') + 1) : '';
+			parse_str($fragment, $fragment_args);
+			$song_id = ! empty($fragment_args['id']) ? absint($fragment_args['id']) : 0;
+		}
+
+		if ($host && false !== strpos($host, 'music.163.com') && $song_id) {
+			$url = 'https://music.163.com/song/media/outer/url?id=' . rawurlencode($song_id) . '.mp3';
 		}
 	}
 
 	return oldbook_clean_url($url);
+}
+
+function oldbook_get_update_song_id($post_id = 0) {
+	$post_id = $post_id ? absint($post_id) : get_the_ID();
+
+	if (oldbook_get_update_type($post_id) !== 'music') {
+		return 0;
+	}
+
+	$url = (string) get_post_meta($post_id, '_oldbook_media_url', true);
+	$url = oldbook_clean_url($url);
+
+	if (! $url) {
+		return 0;
+	}
+
+	$host = wp_parse_url($url, PHP_URL_HOST);
+
+	if (! $host || false === strpos($host, 'music.163.com')) {
+		return 0;
+	}
+
+	$query = wp_parse_url($url, PHP_URL_QUERY);
+	parse_str((string) $query, $query_args);
+	$song_id = ! empty($query_args['id']) ? absint($query_args['id']) : 0;
+
+	if (! $song_id) {
+		$fragment = wp_parse_url($url, PHP_URL_FRAGMENT);
+		$fragment = strpos((string) $fragment, '?') ? substr((string) $fragment, strpos((string) $fragment, '?') + 1) : '';
+		parse_str($fragment, $fragment_args);
+		$song_id = ! empty($fragment_args['id']) ? absint($fragment_args['id']) : 0;
+	}
+
+	return $song_id;
 }
 
 function oldbook_get_photo_ids($post_id) {
@@ -337,6 +436,7 @@ function oldbook_get_update_preview($post_id) {
 
 function oldbook_icon($name, $class = '') {
 	$paths = array(
+		'activity'       => '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
 		'arrow-right'   => '<path d="M5 12h14M13 6l6 6-6 6"/>',
 		'arrow-up-right' => '<path d="M7 17 17 7M8 7h9v9"/>',
 		'chevron-down'   => '<path d="m6 9 6 6 6-6"/>',
@@ -346,6 +446,7 @@ function oldbook_icon($name, $class = '') {
 		'link'           => '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
 		'menu'           => '<path d="M4 7h16M4 12h16M4 17h16"/>',
 		'message-circle' => '<path d="M21 11.5a8.38 8.38 0 0 1-9 8.5 8.5 8.5 0 0 1-3.7-.84L3 21l1.84-4.3A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
+		'message-square' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
 		'moon'           => '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>',
 		'music'          => '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
 		'pause'          => '<path d="M7 4v16M17 4v16"/>',
@@ -354,8 +455,10 @@ function oldbook_icon($name, $class = '') {
 		'plus'           => '<path d="M12 5v14M5 12h14"/>',
 		'search'         => '<circle cx="11" cy="11" r="6"/><path d="m16 16 4.5 4.5"/>',
 		'send'           => '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+		'settings'       => '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/>',
 		'sun'            => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>',
 		'text'           => '<path d="M4 6h16M4 12h16M4 18h10"/>',
+		'thumbs-up'      => '<path d="M7 10v12"/><path d="M15 5.88 14 10h5a2 2 0 0 1 1.9 2.6l-1.6 6a2 2 0 0 1-1.9 1.4H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.7-1l1.5-2.5a1.5 1.5 0 0 1 2 .6Z"/>',
 		'trash'          => '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/>',
 		'video'          => '<rect x="3" y="5" width="13" height="14" rx="1"/><path d="m16 10 5-3v10l-5-3Z"/>',
 		'volume'         => '<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a9 9 0 0 1 0 12"/>',

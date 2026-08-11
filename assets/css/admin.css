@@ -1,221 +1,520 @@
-/* oldbook management screens */
+/* ==========================================================================
+   1. Reset / box model baseline
+   ========================================================================== */
 
-/* Reset / box model */
-.oldbook-admin-wrap,
-.oldbook-admin-wrap *,
-.oldbook-admin-wrap *::before,
-.oldbook-admin-wrap *::after {
+.oldbook-console,
+.oldbook-console *,
+.oldbook-console *::before,
+.oldbook-console *::after {
 	box-sizing: border-box;
 }
 
-.oldbook-admin-wrap *:focus,
-.oldbook-admin-wrap *:focus-visible {
-	outline: none !important;
+.oldbook-console *:focus,
+.oldbook-console *:focus-visible {
+	outline: none;
 }
 
-/* Typography baseline and semantic variables */
+/* ==========================================================================
+   2. Typography baseline
+   ========================================================================== */
+
+.oldbook-console {
+	color: var(--text-primary);
+	font-family: var(--font-sans);
+	font-size: 14px;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+}
+
+.oldbook-console h1,
+.oldbook-console h2,
+.oldbook-console h3,
+.oldbook-console p,
+.oldbook-console ul {
+	margin-top: 0;
+}
+
+/* ==========================================================================
+   3. Semantic tokens — user brand color #2b48ff, cool neutral greys
+   ========================================================================== */
+
 :root {
-	--oldbook-admin-canvas: oklch(0.985 0.008 75);
-	--oldbook-admin-surface: #ffffff;
-	--oldbook-admin-surface-2: #f1f0eb;
-	--oldbook-admin-surface-hover: #e7e5df;
-	--oldbook-admin-brand: #171717;
-	--oldbook-admin-brand-hover: #363636;
-	--oldbook-admin-brand-active: #000000;
-	--oldbook-admin-brand-weak: rgba(23, 23, 23, 0.1);
-	--oldbook-admin-on-brand: #ffffff;
-	--oldbook-admin-accent: #865033;
-	--oldbook-admin-accent-weak: rgba(134, 80, 51, 0.11);
-	--oldbook-admin-text-strong: #111111;
-	--oldbook-admin-text-primary: #242424;
-	--oldbook-admin-text-secondary: #64635e;
-	--oldbook-admin-text-tertiary: #787770;
-	--oldbook-admin-text-disabled: #aaa9a3;
-	--oldbook-admin-border: #d6d4cc;
-	--oldbook-admin-border-strong: #77756d;
-	--oldbook-admin-success: #28643e;
-	--oldbook-admin-success-bg: #e7f1e9;
-	--oldbook-admin-warning: #775a12;
-	--oldbook-admin-warning-bg: #f3edd6;
-	--oldbook-admin-danger: #8a2929;
-	--oldbook-admin-danger-bg: #f7e8e8;
-	--oldbook-admin-info: #3d5d75;
-	--oldbook-admin-info-bg: #e8eef3;
-	--oldbook-admin-shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.06);
-	--oldbook-admin-shadow-md: 0 6px 20px rgba(0, 0, 0, 0.09);
-	--oldbook-admin-radius-control: 8px;
-	--oldbook-admin-radius-surface: 16px;
-	--oldbook-admin-radius-pill: 9998px;
-	--oldbook-admin-max: 1080px;
-	--oldbook-admin-gutter: 24px;
+	--canvas: #faf9fc;
+	--surface: #ffffff;
+	--surface-2: #f3f1f9;
+	--surface-hover: #e9e6f3;
+	--brand: #7c3aed;
+	--brand-hover: #5b21b6;
+	--brand-active: #4c1d95;
+	--brand-weak: #ede9fe;
+	--focus-ring: rgba(124, 58, 237, 0.22);
+	--on-brand: #ffffff;
+	--text-strong: #18181b;
+	--text-primary: #27272a;
+	--text-secondary: #52525b;
+	--text-tertiary: #71717a;
+	--text-disabled: #a1a1aa;
+	--border: #e4e2ec;
+	--border-strong: #c9c6d6;
+	--border-weak: #efedf5;
+	--success: #15803d;
+	--success-bg: #f0fdf4;
+	--warning: #b45309;
+	--warning-bg: #fffbeb;
+	--danger: #b91c1c;
+	--danger-bg: #fef2f2;
+	--info: #1d4ed8;
+	--info-bg: #eff6ff;
+	--shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.05), 0 2px 10px rgba(24, 24, 27, 0.06);
+	--shadow-md: 0 2px 6px rgba(24, 24, 27, 0.07), 0 10px 28px rgba(24, 24, 27, 0.1);
+	--shadow-lg: 0 4px 12px rgba(24, 24, 27, 0.09), 0 16px 40px rgba(24, 24, 27, 0.12);
+	--radius-control: 8px;
+	--radius-surface: 12px;
+	--radius-pill: 9998px;
+	--max: 1080px;
+	--gutter: 24px;
+	--font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+	--ease: cubic-bezier(0.33, 1, 0.68, 1);
+	--t-fast: 160ms;
+	--t-base: 220ms;
+	--t-slow: 280ms;
+	color-scheme: light;
 }
 
-html {
-	scrollbar-color: var(--oldbook-admin-text-tertiary) var(--oldbook-admin-canvas);
-	scrollbar-width: thin;
+:root[data-oldbook-theme="dark"] {
+	--canvas: #0e0d13;
+	--surface: #1a1822;
+	--surface-2: #23202e;
+	--surface-hover: #2b2739;
+	--brand: #a78bfa;
+	--brand-hover: #c4b5fd;
+	--brand-active: #8b5cf6;
+	--brand-weak: rgba(167, 139, 250, 0.16);
+	--focus-ring: rgba(167, 139, 250, 0.3);
+	--on-brand: #1e1033;
+	--text-strong: #f4f2f7;
+	--text-primary: #e4e1ea;
+	--text-secondary: #a8a3b5;
+	--text-tertiary: #7c7689;
+	--text-disabled: #4a4557;
+	--border: #332e40;
+	--border-strong: #4c4559;
+	--border-weak: #282434;
+	--success: #86efac;
+	--success-bg: #12281c;
+	--warning: #fcd34d;
+	--warning-bg: #2b2413;
+	--danger: #fca5a5;
+	--danger-bg: #2e1a1d;
+	--info: #93c5fd;
+	--info-bg: #1a2438;
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 10px rgba(0, 0, 0, 0.4);
+	--shadow-md: 0 2px 6px rgba(0, 0, 0, 0.42), 0 10px 28px rgba(0, 0, 0, 0.5);
+	--shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.6);
+	color-scheme: dark;
 }
 
-body.wp-admin {
-	background: var(--oldbook-admin-canvas);
+body.oldbook-admin-body {
+	background: var(--canvas);
 }
 
-/* Custom scrollbar */
+body.oldbook-admin-body #wpcontent {
+	background: var(--canvas);
+}
+
+/* ==========================================================================
+   4. Custom scrollbar
+   ========================================================================== */
+
 ::-webkit-scrollbar {
 	width: 10px;
 	height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-	background: var(--oldbook-admin-canvas);
+	background: var(--canvas);
 }
 
 ::-webkit-scrollbar-thumb {
-	background: var(--oldbook-admin-text-tertiary);
-	border: 3px solid var(--oldbook-admin-canvas);
-	border-radius: var(--oldbook-admin-radius-pill);
+	background: var(--text-tertiary);
+	border: 3px solid var(--canvas);
+	border-radius: var(--radius-pill);
+	transition: background-color var(--t-base) var(--ease);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: var(--oldbook-admin-text-primary);
+	background: var(--text-primary);
 }
 
-/* Page heading and notices */
-.oldbook-admin-wrap {
-	width: auto;
-	max-width: var(--oldbook-admin-max);
-	margin: 28px 24px 48px 0;
-	color: var(--oldbook-admin-text-primary);
-	font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
-	font-size: 14px;
-	line-height: 1.6;
+html {
+	scrollbar-color: var(--text-tertiary) var(--canvas);
+	scrollbar-width: thin;
 }
 
-.oldbook-admin-wrap h1,
-.oldbook-admin-wrap h2 {
-	font-family: inherit;
-}
+/* ==========================================================================
+   5. Console header
+   ========================================================================== */
 
-.oldbook-admin-wrap > h1 {
-	margin: 0 0 6px;
-	color: var(--oldbook-admin-text-strong);
-	font-size: 22px;
-	font-weight: 700;
-	letter-spacing: -0.01em;
-	line-height: 1.35;
-}
-
-.oldbook-admin-lede {
-	max-width: 600px;
+.oldbook-console {
+	position: relative;
+	width: 100%;
+	max-width: none;
 	margin: 0;
-	color: var(--oldbook-admin-text-secondary);
+	padding: var(--gutter) 10%;
+}
+
+.oldbook-console__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 22px;
+}
+
+.oldbook-console__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	color: var(--text-strong);
+	font-size: 15px;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	line-height: 1.3;
+}
+
+.oldbook-console__brand-logo {
+	display: block;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 28px;
+	background: var(--surface-2);
+	border-radius: var(--radius-control);
+	object-fit: cover;
+}
+
+.oldbook-console__header-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex: 0 0 auto;
+}
+
+.oldbook-console__icon-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	border-radius: 50%;
+	color: var(--text-tertiary);
+	cursor: pointer;
+	font-family: inherit;
 	font-size: 13px;
-	line-height: 1.7;
+	transition: background-color var(--t-base) var(--ease), color var(--t-base) var(--ease);
 }
 
-.oldbook-admin-wrap .notice {
+.oldbook-console__icon-button:hover {
+	background: var(--surface-2);
+	color: var(--text-primary);
+}
+
+.oldbook-console__icon-button:focus-visible {
+	box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.oldbook-console__icon-button:active {
+	transform: scale(0.94);
+	transition-duration: var(--t-fast);
+}
+
+.oldbook-console__theme-icon {
+	display: inline-flex;
+}
+
+.oldbook-console__theme-icon--sun {
+	display: none;
+}
+
+:root[data-oldbook-theme="dark"] .oldbook-console__theme-icon--sun {
+	display: inline-flex;
+}
+
+:root[data-oldbook-theme="dark"] .oldbook-console__theme-icon--moon {
+	display: none;
+}
+
+.oldbook-console__site-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 36px;
+	padding: 8px 10px;
+	border-radius: var(--radius-control);
+	color: var(--text-secondary);
+	font-size: 13px;
+	font-weight: 650;
+	line-height: 1.2;
+	text-decoration: none;
+	transition: background-color var(--t-base) var(--ease), color var(--t-base) var(--ease);
+}
+
+.oldbook-console__site-link:hover {
+	background: var(--surface-2);
+	color: var(--brand);
+}
+
+.oldbook-console__site-link:focus-visible {
+	box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.oldbook-console__site-link-icon {
+	display: inline-flex;
+}
+
+/* ==========================================================================
+   6. Left navigation and main layout
+   ========================================================================== */
+
+.oldbook-console__layout {
+	display: grid;
+	grid-template-columns: 200px minmax(0, 1fr);
+	gap: 32px;
+	align-items: start;
+}
+
+.oldbook-console__nav {
+	position: sticky;
+	top: 32px;
+	padding: 4px 0;
+}
+
+.oldbook-console__nav ul {
+	display: grid;
+	gap: 4px;
+	margin: 0;
+	list-style: none;
+}
+
+.oldbook-console__nav li {
+	margin: 0;
+}
+
+.oldbook-console__nav a {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 38px;
+	padding: 9px 12px;
+	border-radius: var(--radius-control);
+	color: var(--text-secondary);
+	font-size: 13px;
+	font-weight: 650;
+	line-height: 1.3;
+	text-decoration: none;
+	transition: background-color var(--t-base) var(--ease), color var(--t-base) var(--ease);
+}
+
+.oldbook-console__nav a:hover {
+	background: var(--surface-2);
+	color: var(--text-strong);
+}
+
+.oldbook-console__nav a:active {
+	background: var(--surface-hover);
+	transition-duration: var(--t-fast);
+}
+
+.oldbook-console__nav a:focus-visible {
+	box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.oldbook-console__nav li.is-current a {
+	background: var(--brand-weak);
+	color: var(--brand);
+}
+
+.oldbook-console__nav li.is-current a:hover {
+	background: var(--brand-weak);
+	color: var(--brand);
+}
+
+.oldbook-console__nav-icon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	transition: color var(--t-base) var(--ease);
+}
+
+.oldbook-console__nav a:hover .oldbook-console__nav-icon {
+	color: var(--text-secondary);
+}
+
+.oldbook-console__nav li.is-current .oldbook-console__nav-icon {
+	color: var(--brand);
+}
+
+/* ==========================================================================
+   7. Body layout and sections
+   ========================================================================== */
+
+.oldbook-console__body {
+	min-width: 0;
+}
+
+.oldbook-console__heading {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	margin: 4px 2px 18px;
+}
+
+.oldbook-console__heading-text {
+	min-width: 0;
+}
+
+.oldbook-console__heading h2 {
+	margin: 0 0 4px;
+	color: var(--text-strong);
+	font-size: 18px;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	line-height: 1.3;
+}
+
+.oldbook-console__heading p {
+	margin: 0;
+	color: var(--text-secondary);
+	font-size: 13px;
+}
+
+.oldbook-console__heading-action {
+	flex: 0 0 auto;
+}
+
+/* Notices */
+
+.oldbook-console .notice {
 	max-width: 760px;
-	margin: 18px 0 0 !important;
-	padding: 12px 14px !important;
+	margin: 0 0 18px !important;
+	padding: 13px 16px !important;
 	border: 0 !important;
-	border-radius: var(--oldbook-admin-radius-control);
-	box-shadow: var(--oldbook-admin-shadow-sm);
+	border-radius: var(--radius-control);
+	box-shadow: var(--shadow-sm);
 }
 
-.oldbook-admin-wrap .notice p {
+.oldbook-console .notice p {
 	margin: 0;
 	padding: 0;
 	font-size: 13px;
 }
 
-.oldbook-admin-wrap .notice-success {
-	background: var(--oldbook-admin-success-bg);
-	color: var(--oldbook-admin-success);
+.oldbook-console .notice-success {
+	background: var(--success-bg);
+	color: var(--success);
 }
 
-.oldbook-admin-wrap .notice-error {
-	background: var(--oldbook-admin-danger-bg);
-	color: var(--oldbook-admin-danger);
+.oldbook-console .notice-error {
+	background: var(--danger-bg);
+	color: var(--danger);
 }
 
-.oldbook-admin-wrap .notice-dismiss {
+.oldbook-console .notice-dismiss {
 	color: currentColor;
-	opacity: 0.65;
-	transition: opacity 180ms ease, box-shadow 180ms ease;
+	opacity: 0.6;
+	transition: opacity var(--t-base) var(--ease);
 }
 
-.oldbook-admin-wrap .notice-dismiss:hover {
+.oldbook-console .notice-dismiss:hover {
 	opacity: 1;
 }
 
-.oldbook-admin-toolbar {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	gap: 12px;
-	margin: 24px 0 14px;
-}
+/* ==========================================================================
+   8. Components
+   ========================================================================== */
 
-/* Buttons and focus states */
-.oldbook-admin-wrap .button,
-.oldbook-admin-wrap button.button {
+/* ---- Buttons ---- */
+
+.oldbook-console .button,
+.oldbook-console button.button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 7px;
-	min-height: 36px;
-	padding: 8px 12px;
-	background: var(--oldbook-admin-surface-2);
+	min-height: 38px;
+	padding: 9px 14px;
+	background: var(--surface-2);
 	border: 0;
-	border-radius: var(--oldbook-admin-radius-control);
+	border-radius: var(--radius-control);
 	box-shadow: none;
-	color: var(--oldbook-admin-text-primary);
+	color: var(--text-primary);
 	font-family: inherit;
 	font-size: 13px;
 	font-weight: 650;
 	line-height: 1.2;
 	text-decoration: none;
 	text-shadow: none;
-	transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, opacity 180ms ease, transform 100ms ease;
+	transition: background-color var(--t-base) var(--ease), color var(--t-base) var(--ease), transform 100ms ease;
 }
 
-.oldbook-admin-wrap .button-primary,
-.oldbook-admin-wrap button.button-primary {
-	background: var(--oldbook-admin-brand);
-	color: var(--oldbook-admin-on-brand);
+.oldbook-console .button:hover,
+.oldbook-console button.button:hover {
+	background: var(--surface-hover);
+	color: var(--text-strong);
 }
 
-.oldbook-admin-wrap .button-small {
+.oldbook-console .button-primary,
+.oldbook-console button.button-primary {
+	background: var(--brand);
+	color: var(--on-brand);
+}
+
+.oldbook-console .button-primary:hover,
+.oldbook-console button.button-primary:hover {
+	background: var(--brand-hover);
+	color: var(--on-brand);
+}
+
+.oldbook-console .button-small {
 	min-height: 32px;
-	padding: 7px 9px;
+	padding: 7px 10px;
 	font-size: 12px;
 }
 
-.oldbook-admin-wrap .button-large {
-	min-height: 40px;
-	padding: 10px 14px;
+.oldbook-console .button-large {
+	min-height: 42px;
+	padding: 11px 16px;
 }
 
-.oldbook-admin-wrap .button:focus-visible,
-.oldbook-admin-wrap .button:focus,
-.oldbook-admin-wrap button:focus-visible,
-.oldbook-admin-wrap button:focus,
-.oldbook-admin-wrap .notice-dismiss:focus-visible,
-.oldbook-admin-wrap .oldbook-picker__option:focus {
-	box-shadow: 0 0 0 3px var(--oldbook-admin-brand-weak), inset 0 0 0 1px var(--oldbook-admin-brand) !important;
+.oldbook-console .button:focus-visible {
+	box-shadow: 0 0 0 2px var(--focus-ring);
 }
 
-.oldbook-admin-wrap .button:active,
-.oldbook-admin-wrap button:active {
+.oldbook-console .button:active,
+.oldbook-console button:active {
 	transform: scale(0.97);
 	transition-duration: 100ms;
 }
 
-.oldbook-admin-wrap .button:disabled,
-.oldbook-admin-wrap button:disabled,
-.oldbook-admin-wrap input:disabled,
-.oldbook-admin-wrap textarea:disabled {
+.oldbook-console .button:disabled,
+.oldbook-console button:disabled,
+.oldbook-console input:disabled,
+.oldbook-console textarea:disabled {
 	cursor: not-allowed;
 	opacity: 0.45;
+}
+
+.oldbook-console .oldbook-admin-danger {
+	background: var(--danger-bg);
+	color: var(--danger) !important;
+}
+
+.oldbook-console .oldbook-admin-danger:hover {
+	background: rgba(185, 28, 28, 0.2);
 }
 
 .oldbook-icon {
@@ -226,20 +525,18 @@ body.wp-admin {
 	vertical-align: -0.2em;
 }
 
-.oldbook-admin-danger {
-	color: var(--oldbook-admin-danger) !important;
-}
+/* ---- Content tables: one surface, rows separated by background only ---- */
 
-/* Content tables */
 .oldbook-admin-table {
 	width: 100%;
-	min-width: 760px;
+	min-width: 780px;
 	margin: 0;
 	border: 0;
-	border-collapse: separate !important;
-	border-spacing: 0 8px;
-	background: transparent;
-	box-shadow: none;
+	border-collapse: collapse;
+	background: var(--surface);
+	border-radius: var(--radius-surface);
+	box-shadow: var(--shadow-sm);
+	overflow: hidden;
 }
 
 .oldbook-admin-table::before,
@@ -248,61 +545,71 @@ body.wp-admin {
 }
 
 .oldbook-admin-table thead th {
-	padding: 0 14px 4px;
+	padding: 12px 16px;
+	border: 0 !important;
+	background: var(--surface-2);
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.4;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.oldbook-admin-table thead th.oldbook-admin-table__actions {
+	text-align: right;
+}
+
+.oldbook-admin-table tbody td {
+	padding: 14px 16px;
 	border: 0 !important;
 	background: transparent !important;
-	color: var(--oldbook-admin-text-tertiary);
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.04em;
-	line-height: 1.5;
+	color: var(--text-primary);
+	font-size: 13px;
+	vertical-align: middle;
+	transition: background-color var(--t-base) var(--ease);
 }
 
 .oldbook-admin-table tbody tr {
 	background: transparent !important;
-	transition: transform 180ms ease;
+	transition: background-color var(--t-base) var(--ease);
 }
 
-.oldbook-admin-table tbody td {
-	padding: 14px;
-	border: 0 !important;
-	background: var(--oldbook-admin-surface) !important;
-	box-shadow: var(--oldbook-admin-shadow-sm);
-	color: var(--oldbook-admin-text-primary);
-	font-size: 13px;
-	vertical-align: middle;
-}
-
-.oldbook-admin-table tbody td:first-child {
-	border-radius: var(--oldbook-admin-radius-control) 0 0 var(--oldbook-admin-radius-control);
-}
-
-.oldbook-admin-table tbody td:last-child {
-	border-radius: 0 var(--oldbook-admin-radius-control) var(--oldbook-admin-radius-control) 0;
+.oldbook-admin-table tbody tr:hover td {
+	background: var(--surface-hover) !important;
 }
 
 .oldbook-admin-table tbody td strong {
-	color: var(--oldbook-admin-text-strong);
+	color: var(--text-strong);
 	font-weight: 700;
 }
 
-.oldbook-admin-table tbody td a:not(.button) {
-	color: var(--oldbook-admin-accent);
-	text-decoration: none;
-	text-underline-offset: 0.18em;
-	transition: color 180ms ease, box-shadow 180ms ease;
-}
-
 .oldbook-admin-table__preview {
-	max-width: 42ch;
+	max-width: 46ch;
 	margin: 4px 0 0;
-	color: var(--oldbook-admin-text-secondary);
+	color: var(--text-secondary);
 	font-size: 12px;
 	line-height: 1.5;
 }
 
+.oldbook-admin-table__url {
+	max-width: 34ch;
+	overflow: hidden;
+	color: var(--brand);
+	text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	transition: color var(--t-base) var(--ease);
+}
+
+.oldbook-admin-table__url:hover {
+	color: var(--brand-hover);
+	text-decoration: underline;
+	text-underline-offset: 0.18em;
+}
+
 .oldbook-admin-table__actions {
-	width: 210px;
+	width: 220px;
 	text-align: right;
 	white-space: nowrap;
 }
@@ -317,29 +624,88 @@ body.wp-admin {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	color: var(--oldbook-admin-text-secondary);
+	color: var(--text-secondary);
 }
 
 .oldbook-admin-type__icon {
 	display: inline-flex;
-	color: var(--oldbook-admin-accent);
+	color: var(--brand);
 }
 
+.oldbook-admin-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 4px 10px 4px 9px;
+	background: var(--surface-2);
+	border-radius: var(--radius-pill);
+	color: var(--text-secondary);
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.oldbook-admin-status__dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--text-disabled);
+}
+
+.oldbook-admin-status.is-published {
+	background: var(--success-bg);
+	color: var(--success);
+}
+
+.oldbook-admin-status.is-published .oldbook-admin-status__dot {
+	background: var(--success);
+}
+
+/* ---- Empty state ---- */
+
 .oldbook-admin-empty {
+	display: grid;
+	justify-items: center;
+	gap: 14px;
 	max-width: 760px;
-	padding: 32px 20px;
-	background: var(--oldbook-admin-surface);
-	border-radius: var(--oldbook-admin-radius-surface);
-	box-shadow: var(--oldbook-admin-shadow-sm);
-	color: var(--oldbook-admin-text-secondary);
+	padding: 48px 24px;
+	background: var(--surface);
+	border-radius: var(--radius-surface);
+	box-shadow: var(--shadow-sm);
+	color: var(--text-secondary);
 	text-align: center;
 }
 
-/* Forms */
+.oldbook-admin-empty p {
+	margin: 0;
+	font-size: 13px;
+}
+
+.oldbook-admin-empty__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 52px;
+	height: 52px;
+	background: var(--brand-weak);
+	border-radius: 50%;
+	color: var(--brand);
+}
+
+.oldbook-admin-empty__icon .oldbook-icon {
+	width: 24px;
+	height: 24px;
+}
+
+.oldbook-admin-empty .button {
+	min-width: 150px;
+}
+
+/* ---- Forms ---- */
+
 .oldbook-admin-form {
 	display: grid;
 	max-width: 760px;
-	gap: 12px;
+	gap: 14px;
 }
 
 .oldbook-settings-form {
@@ -357,9 +723,190 @@ body.wp-admin {
 	grid-column: 1 / -1;
 }
 
+.oldbook-admin-form__section {
+	display: grid;
+	gap: 14px;
+	margin: 0;
+	padding: 22px 24px;
+	background: var(--surface);
+	border-radius: var(--radius-surface);
+	box-shadow: var(--shadow-sm);
+}
+
+.oldbook-admin-form__section > :last-child {
+	margin-bottom: 0;
+}
+
+.oldbook-admin-form__section h2 {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	margin: 0;
+	color: var(--text-strong);
+	font-size: 15px;
+	font-weight: 750;
+	line-height: 1.4;
+}
+
+.oldbook-admin-form__section h2::before {
+	content: "";
+	width: 3px;
+	height: 14px;
+	flex: 0 0 3px;
+	background: var(--brand);
+	border-radius: 2px;
+}
+
 .oldbook-admin-field {
 	display: grid;
 	gap: 8px;
+}
+
+.oldbook-admin-label {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 4px 10px;
+	margin: 0;
+	color: var(--text-primary);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.4;
+}
+
+.oldbook-admin-label span,
+.oldbook-admin-form .description {
+	color: var(--text-tertiary);
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1.55;
+}
+
+.oldbook-admin-label output {
+	margin-left: auto;
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.oldbook-admin-form input[type="text"],
+.oldbook-admin-form input[type="url"],
+.oldbook-admin-form input[type="file"],
+.oldbook-admin-form textarea {
+	display: block;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 10px 12px;
+	background: var(--surface-2);
+	border: 0;
+	border-radius: var(--radius-control);
+	box-shadow: none;
+	color: var(--text-primary);
+	font-family: inherit;
+	font-size: 13px;
+	line-height: 1.5;
+	transition: background-color var(--t-base) var(--ease);
+}
+
+.oldbook-admin-form input[type="text"],
+.oldbook-admin-form input[type="url"] {
+	min-height: 42px;
+}
+
+.oldbook-admin-form input[type="file"] {
+	min-height: 42px;
+	padding: 9px 10px;
+	color: var(--text-secondary);
+}
+
+.oldbook-admin-form textarea {
+	min-height: 132px;
+	resize: vertical;
+}
+
+.oldbook-admin-form input::placeholder,
+.oldbook-admin-form textarea::placeholder {
+	color: var(--text-tertiary);
+	opacity: 1;
+}
+
+.oldbook-admin-form input[type="text"]:hover,
+.oldbook-admin-form input[type="url"]:hover,
+.oldbook-admin-form input[type="file"]:hover,
+.oldbook-admin-form textarea:hover {
+	background: var(--surface-hover);
+}
+
+.oldbook-admin-form input[type="text"]:focus,
+.oldbook-admin-form input[type="url"]:focus,
+.oldbook-admin-form input[type="file"]:focus,
+.oldbook-admin-form textarea:focus {
+	background: var(--surface);
+	box-shadow: 0 0 0 2px var(--focus-ring), inset 0 0 0 1px var(--brand);
+}
+
+.oldbook-admin-form input[type="color"] {
+	width: 52px;
+	height: 42px;
+	padding: 4px;
+	background: var(--surface-2);
+	border: 0;
+	border-radius: var(--radius-control);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 13px;
+	transition: background-color var(--t-base) var(--ease);
+}
+
+.oldbook-admin-form input[type="color"]:hover {
+	background: var(--surface-hover);
+}
+
+.oldbook-admin-form input[type="color"]:focus {
+	box-shadow: 0 0 0 2px var(--focus-ring), inset 0 0 0 1px var(--brand);
+}
+
+.oldbook-admin-form input[type="range"] {
+	width: 100%;
+	margin: 13px 0 8px;
+	accent-color: var(--brand);
+	font-family: inherit;
+	font-size: 13px;
+}
+
+.oldbook-admin-form input[type="range"]:focus {
+	box-shadow: 0 0 0 3px var(--brand-weak);
+}
+
+.oldbook-settings-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.oldbook-settings-color-control {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.oldbook-settings-color-control code {
+	color: var(--text-secondary);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 12px;
+}
+
+.oldbook-settings-gradient-fields {
+	display: grid;
+	gap: 16px;
+	padding-top: 4px;
+	opacity: 0.5;
+	transition: opacity var(--t-base) var(--ease);
+}
+
+.oldbook-settings-gradient-fields.is-enabled {
+	opacity: 1;
 }
 
 .oldbook-admin-image-preview {
@@ -368,9 +915,9 @@ body.wp-admin {
 	gap: 12px;
 	min-height: 92px;
 	padding: 8px;
-	background: var(--oldbook-admin-surface-2);
-	border-radius: var(--oldbook-admin-radius-control);
-	color: var(--oldbook-admin-text-secondary);
+	background: var(--surface-2);
+	border-radius: var(--radius-control);
+	color: var(--text-secondary);
 	font-size: 12px;
 }
 
@@ -379,8 +926,8 @@ body.wp-admin {
 	width: 76px;
 	height: 76px;
 	flex: 0 0 76px;
-	background: var(--oldbook-admin-surface);
-	border-radius: var(--oldbook-admin-radius-control);
+	background: var(--surface);
+	border-radius: var(--radius-control);
 	object-fit: contain;
 }
 
@@ -392,8 +939,8 @@ body.wp-admin {
 	position: relative;
 	overflow: hidden;
 	aspect-ratio: 16 / 6;
-	background: var(--oldbook-admin-surface-2);
-	border-radius: var(--oldbook-admin-radius-control);
+	background: var(--surface-2);
+	border-radius: var(--radius-control);
 }
 
 .oldbook-admin-cover-preview img,
@@ -418,169 +965,46 @@ body.wp-admin {
 	right: 12px;
 	bottom: 10px;
 	padding: 5px 8px;
-	background: rgba(0, 0, 0, 0.34);
+	background: rgba(15, 23, 42, 0.72);
 	border-radius: 6px;
-	color: #fff;
+	color: #ffffff;
 	font-size: 11px;
 }
 
-.oldbook-settings-grid {
+.oldbook-admin-photo-list {
 	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 16px;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: 8px;
+	margin-top: 4px;
 }
 
-.oldbook-settings-color-control {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.oldbook-admin-form input[type="color"] {
-	width: 52px;
-	height: 42px;
-	padding: 4px;
-	background: var(--oldbook-admin-surface-2);
-	border: 0;
-	border-radius: var(--oldbook-admin-radius-control);
-	box-shadow: inset 0 -1px 0 var(--oldbook-admin-border);
-	cursor: pointer;
-}
-
-.oldbook-admin-form input[type="color"]:focus {
-	box-shadow: 0 0 0 3px var(--oldbook-admin-brand-weak), inset 0 0 0 1px var(--oldbook-admin-brand);
-}
-
-.oldbook-admin-form input[type="range"]:focus {
-	box-shadow: 0 0 0 3px var(--oldbook-admin-brand-weak);
-}
-
-.oldbook-settings-color-control code {
-	color: var(--oldbook-admin-text-secondary);
-	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-	font-size: 12px;
-}
-
-.oldbook-admin-form input[type="range"] {
-	width: 100%;
-	margin: 13px 0 8px;
-	accent-color: var(--oldbook-admin-brand);
-}
-
-.oldbook-admin-label output {
-	margin-left: auto;
-	color: var(--oldbook-admin-text-secondary);
-	font-size: 12px;
-	font-weight: 600;
-}
-
-.oldbook-settings-gradient-fields {
-	display: grid;
-	gap: 16px;
-	padding-top: 4px;
-	opacity: 0.5;
-	transition: opacity 180ms ease;
-}
-
-.oldbook-settings-gradient-fields.is-enabled {
-	opacity: 1;
-}
-
-.oldbook-admin-form__section {
-	display: grid;
-	gap: 12px;
-	margin: 0;
-	padding: 20px;
-	background: var(--oldbook-admin-surface);
-	border: 0;
-	border-radius: var(--oldbook-admin-radius-surface);
-	box-shadow: var(--oldbook-admin-shadow-sm);
-}
-
-.oldbook-admin-form__section > :last-child {
-	margin-bottom: 0;
-}
-
-.oldbook-admin-form__section h2 {
-	margin: 0;
-	color: var(--oldbook-admin-text-strong);
-	font-size: 15px;
-	font-weight: 700;
-	line-height: 1.4;
-}
-
-.oldbook-admin-label {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	gap: 4px 10px;
-	margin: 0;
-	color: var(--oldbook-admin-text-primary);
-	font-size: 13px;
-	font-weight: 700;
-	line-height: 1.4;
-}
-
-.oldbook-admin-label span,
-.oldbook-admin-form .description {
-	color: var(--oldbook-admin-text-tertiary);
-	font-size: 12px;
-	font-weight: 400;
-	line-height: 1.55;
-}
-
-.oldbook-admin-form input[type="text"],
-.oldbook-admin-form input[type="url"],
-.oldbook-admin-form input[type="file"],
-.oldbook-admin-form textarea {
+.oldbook-admin-photo-list img {
 	display: block;
 	width: 100%;
-	max-width: none;
-	margin: 0;
-	padding: 10px 12px;
-	background: var(--oldbook-admin-surface-2);
-	border: 1px solid transparent;
-	border-radius: var(--oldbook-admin-radius-control);
-	box-shadow: inset 0 -1px 0 var(--oldbook-admin-border);
-	color: var(--oldbook-admin-text-primary);
-	font-family: inherit;
-	font-size: 13px;
-	line-height: 1.5;
-	transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+	aspect-ratio: 1;
+	background: var(--surface-2);
+	border-radius: var(--radius-control);
+	object-fit: cover;
 }
 
-.oldbook-admin-form input[type="text"],
-.oldbook-admin-form input[type="url"] {
-	min-height: 42px;
+.oldbook-admin-form__actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-top: 4px;
 }
 
-.oldbook-admin-form input[type="file"] {
-	min-height: 42px;
-	padding: 9px 10px;
-	color: var(--oldbook-admin-text-secondary);
+.oldbook-admin-form__actions .button:not(.button-primary) {
+	order: 1;
 }
 
-.oldbook-admin-form textarea {
-	min-height: 132px;
-	resize: vertical;
+.oldbook-admin-form__actions .button-primary {
+	order: 2;
 }
 
-.oldbook-admin-form input::placeholder,
-.oldbook-admin-form textarea::placeholder {
-	color: var(--oldbook-admin-text-tertiary);
-	opacity: 1;
-}
+/* ---- Type and source pickers ---- */
 
-.oldbook-admin-form input[type="text"]:focus,
-.oldbook-admin-form input[type="url"]:focus,
-.oldbook-admin-form input[type="file"]:focus,
-.oldbook-admin-form textarea:focus {
-	background: var(--oldbook-admin-surface);
-	border-color: var(--oldbook-admin-brand);
-	box-shadow: 0 0 0 3px var(--oldbook-admin-brand-weak), inset 0 0 0 1px var(--oldbook-admin-brand);
-}
-
-/* Type and source pickers */
 .oldbook-picker {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -599,40 +1023,45 @@ body.wp-admin {
 	gap: 8px;
 	min-height: 52px;
 	padding: 11px 12px;
-	background: var(--oldbook-admin-surface-2);
+	background: var(--surface-2);
 	border: 0;
-	border-radius: 12px;
-	box-shadow: inset 0 0 0 1px transparent;
-	color: var(--oldbook-admin-text-primary);
+	border-radius: var(--radius-control);
+	box-shadow: none;
+	color: var(--text-primary);
 	cursor: pointer;
 	font-family: inherit;
 	font-size: 13px;
 	font-weight: 650;
 	line-height: 1.35;
 	text-align: left;
-	transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 100ms ease;
+	transition: background-color var(--t-base) var(--ease), color var(--t-base) var(--ease), transform 100ms ease;
 }
 
 .oldbook-picker__option:hover {
-	background: var(--oldbook-admin-surface-hover);
+	background: var(--surface-hover);
+}
+
+.oldbook-picker__option:active {
+	transform: scale(0.98);
+	transition-duration: 100ms;
 }
 
 .oldbook-picker__option:focus-visible {
-	box-shadow: 0 0 0 3px var(--oldbook-admin-brand-weak), inset 0 0 0 1px var(--oldbook-admin-brand);
+	box-shadow: 0 0 0 2px var(--focus-ring), inset 0 0 0 1px var(--brand);
 }
 
 .oldbook-picker__option.is-selected {
-	background: var(--oldbook-admin-brand);
-	color: var(--oldbook-admin-on-brand);
+	background: var(--brand);
+	color: var(--on-brand);
 }
 
 .oldbook-picker__option.is-selected:hover {
-	background: var(--oldbook-admin-brand-hover);
+	background: var(--brand-hover);
 }
 
 .oldbook-picker__icon {
 	display: inline-flex;
-	color: var(--oldbook-admin-accent);
+	color: var(--brand);
 }
 
 .oldbook-picker__option.is-selected .oldbook-picker__icon {
@@ -642,7 +1071,6 @@ body.wp-admin {
 /* Conditional fields use a reversible transition instead of an instant jump. */
 .oldbook-admin-conditional {
 	max-height: 0;
-	margin-top: -12px;
 	padding-top: 0;
 	padding-bottom: 0;
 	opacity: 0;
@@ -650,19 +1078,18 @@ body.wp-admin {
 	pointer-events: none;
 	transform: translateY(-6px);
 	visibility: hidden;
-	transition: max-height 220ms ease, margin 220ms ease, padding 220ms ease, opacity 180ms ease, transform 220ms ease, visibility 0s linear 220ms;
+	transition: max-height var(--t-slow) var(--ease), padding var(--t-base) var(--ease), opacity var(--t-base) var(--ease), transform var(--t-slow) var(--ease), visibility 0s linear var(--t-slow);
 }
 
 .oldbook-admin-conditional.is-visible {
 	max-height: 1200px;
-	margin-top: 0;
-	padding-top: 20px;
-	padding-bottom: 20px;
+	padding-top: 22px;
+	padding-bottom: 22px;
 	opacity: 1;
 	pointer-events: auto;
 	transform: translateY(0);
 	visibility: visible;
-	transition: max-height 260ms ease, margin 220ms ease, padding 220ms ease, opacity 180ms ease, transform 220ms ease, visibility 0s linear 0s;
+	transition: max-height var(--t-slow) var(--ease), padding var(--t-base) var(--ease), opacity var(--t-base) var(--ease), transform var(--t-slow) var(--ease), visibility 0s linear 0s;
 }
 
 .oldbook-admin-media-source {
@@ -675,7 +1102,7 @@ body.wp-admin {
 	pointer-events: none;
 	transform: translateY(-4px);
 	visibility: hidden;
-	transition: max-height 220ms ease, margin 220ms ease, opacity 180ms ease, transform 220ms ease, visibility 0s linear 220ms;
+	transition: max-height var(--t-slow) var(--ease), opacity var(--t-base) var(--ease), transform var(--t-slow) var(--ease), visibility 0s linear var(--t-slow);
 }
 
 .oldbook-admin-media-source.is-visible {
@@ -685,90 +1112,80 @@ body.wp-admin {
 	pointer-events: auto;
 	transform: translateY(0);
 	visibility: visible;
-	transition: max-height 220ms ease, margin 220ms ease, opacity 180ms ease, transform 220ms ease, visibility 0s linear 0s;
+	transition: max-height var(--t-slow) var(--ease), opacity var(--t-base) var(--ease), transform var(--t-slow) var(--ease), visibility 0s linear 0s;
 }
 
-.oldbook-admin-photo-list {
-	display: grid;
-	grid-template-columns: repeat(6, minmax(0, 1fr));
-	gap: 8px;
-	margin-top: 4px;
+/* ==========================================================================
+   8b. WordPress admin core overrides — keep console controls bespoke
+   ========================================================================== */
+
+body.oldbook-admin-body .button,
+body.oldbook-admin-body button.button {
+	font-family: var(--font-sans);
+	font-size: 13px;
+	line-height: 1.2;
+	text-shadow: none;
+	box-shadow: none;
 }
 
-.oldbook-admin-photo-list img {
-	display: block;
-	width: 100%;
-	aspect-ratio: 1;
-	background: var(--oldbook-admin-surface-2);
-	border-radius: var(--oldbook-admin-radius-control);
-	object-fit: cover;
+body.oldbook-admin-body .button-primary,
+body.oldbook-admin-body button.button-primary {
+	text-shadow: none;
 }
 
-.oldbook-admin-form__actions {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	gap: 8px;
-	margin-top: 4px;
+body.oldbook-admin-body .oldbook-console input[type="text"],
+body.oldbook-admin-body .oldbook-console input[type="url"],
+body.oldbook-admin-body .oldbook-console input[type="file"],
+body.oldbook-admin-body .oldbook-console input[type="color"],
+body.oldbook-admin-body .oldbook-console textarea,
+body.oldbook-admin-body .oldbook-console select {
+	border: 0;
+	border-radius: var(--radius-control);
 }
 
-.oldbook-admin-form__actions .button:not(.button-primary) {
-	order: 1;
+body.oldbook-admin-body .oldbook-console table.oldbook-admin-table,
+body.oldbook-admin-body .oldbook-console table.oldbook-admin-table th,
+body.oldbook-admin-body .oldbook-console table.oldbook-admin-table td {
+	border: 0;
 }
 
-.oldbook-admin-form__actions .button-primary {
-	order: 2;
+body.oldbook-admin-body .oldbook-console .notice-dismiss {
+	background: none;
+	box-shadow: none;
+	color: currentColor;
 }
 
-/* Hover states */
-@media (hover: hover) and (pointer: fine) {
-	.oldbook-admin-wrap .button:not(:disabled):hover {
-		background: var(--oldbook-admin-surface-hover);
-		color: var(--oldbook-admin-text-strong);
-		box-shadow: var(--oldbook-admin-shadow-sm);
-	}
+/* ==========================================================================
+   9. Responsive layout
+   ========================================================================== */
 
-	.oldbook-admin-wrap .button-primary:not(:disabled):hover {
-		background: var(--oldbook-admin-brand-hover);
-		color: var(--oldbook-admin-on-brand);
-	}
-
-	.oldbook-admin-wrap .oldbook-admin-danger:hover {
-		background: var(--oldbook-admin-danger-bg);
-		color: var(--oldbook-admin-danger) !important;
-	}
-
-	.oldbook-admin-table tbody tr:hover td {
-		background: var(--oldbook-admin-surface-hover) !important;
-	}
-
-	.oldbook-admin-table tbody tr:hover {
-		transform: translateY(-1px);
-	}
-
-	.oldbook-admin-table tbody td a:not(.button):hover {
-		color: var(--oldbook-admin-accent);
-		text-decoration: underline;
-	}
-
-	.oldbook-admin-form input[type="text"]:hover,
-	.oldbook-admin-form input[type="url"]:hover,
-	.oldbook-admin-form input[type="file"]:hover,
-	.oldbook-admin-form textarea:hover {
-		background: var(--oldbook-admin-surface-hover);
-		border-color: var(--oldbook-admin-border-strong);
-	}
-}
-
-/* Responsive layout */
 @media (max-width: 782px) {
-	.oldbook-admin-wrap {
-		margin-right: 16px;
+	.oldbook-console {
+		padding: 16px;
+	}
+	.oldbook-console__layout {
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
+
+	.oldbook-console__nav {
+		position: static;
+		overflow-x: auto;
+	}
+
+	.oldbook-console__nav ul {
+		display: flex;
+		gap: 4px;
+	}
+
+	.oldbook-console__nav a {
+		white-space: nowrap;
 	}
 
 	.oldbook-admin-table {
 		display: block;
 		overflow-x: auto;
+		border-radius: var(--radius-surface);
 	}
 
 	.oldbook-picker {
@@ -777,19 +1194,25 @@ body.wp-admin {
 }
 
 @media (max-width: 480px) {
-	.oldbook-admin-wrap {
-		margin-top: 20px;
-		margin-right: 12px;
+	.oldbook-console {
+		padding: 12px;
 	}
 
-	.oldbook-admin-toolbar,
-	.oldbook-admin-form__actions {
+	.oldbook-console__header {
+		margin-bottom: 16px;
+	}
+
+	.oldbook-console__site-link span:first-child {
+		display: none;
+	}
+
+	.oldbook-console__heading {
 		align-items: stretch;
 		flex-direction: column;
+		gap: 12px;
 	}
 
-	.oldbook-admin-toolbar .button,
-	.oldbook-admin-form__actions .button {
+	.oldbook-console__heading-action .button {
 		width: 100%;
 	}
 
@@ -815,9 +1238,9 @@ body.wp-admin {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.oldbook-admin-wrap *,
-	.oldbook-admin-wrap *::before,
-	.oldbook-admin-wrap *::after {
+	.oldbook-console *,
+	.oldbook-console *::before,
+	.oldbook-console *::after {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		scroll-behavior: auto !important;

@@ -12,12 +12,12 @@
 			"palette": [
 				{
 					"slug": "ink",
-					"color": "oklch(0.22 0.008 170)",
+					"color": "#18181b",
 					"name": "墨色"
 				},
 				{
 					"slug": "paper",
-					"color": "oklch(0.98 0.004 165)",
+					"color": "#faf9fc",
 					"name": "纸面"
 				},
 				{
@@ -27,23 +27,23 @@
 				},
 				{
 					"slug": "muted",
-					"color": "oklch(0.5 0.012 170)",
+					"color": "#52525b",
 					"name": "次要文字"
 				},
 				{
 					"slug": "line",
-					"color": "oklch(0.92 0.006 165)",
+					"color": "#efedf5",
 					"name": "分隔线"
 				},
 				{
 					"slug": "accent",
-					"color": "oklch(0.5 0.105 160)",
-					"name": "墨绿"
+					"color": "#7c3aed",
+					"name": "主题紫"
 				},
 				{
 					"slug": "accent-dark",
-					"color": "oklch(0.45 0.105 160)",
-					"name": "深墨绿"
+					"color": "#4c1d95",
+					"name": "深紫"
 				}
 			]
 		},

@@ -64,6 +64,38 @@
 		});
 	}
 
+	function setupThemeToggle() {
+		var toggle = document.querySelector('[data-oldbook-theme-toggle]');
+		var root = document.documentElement;
+
+		if (!toggle) {
+			return;
+		}
+
+		function applyTheme(theme, persist) {
+			var isDark = 'dark' === theme;
+			var nextLabel = isDark ? '浅色模式' : '深色模式';
+
+			root.setAttribute('data-oldbook-theme', isDark ? 'dark' : 'light');
+			toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+			toggle.setAttribute('aria-label', nextLabel);
+			toggle.setAttribute('title', nextLabel);
+
+			if (persist) {
+				try {
+					window.localStorage.setItem('oldbook-theme', isDark ? 'dark' : 'light');
+				} catch (error) {
+					// The current theme still applies for this visit.
+				}
+			}
+		}
+
+		applyTheme('dark' === root.getAttribute('data-oldbook-theme') ? 'dark' : 'light', false);
+		toggle.addEventListener('click', function () {
+			applyTheme('dark' === root.getAttribute('data-oldbook-theme') ? 'light' : 'dark', true);
+		});
+	}
+
 	document.querySelectorAll('[data-oldbook-picker]').forEach(function (option) {
 		option.addEventListener('click', function () {
 			var group = option.getAttribute('data-oldbook-picker');
@@ -126,6 +158,7 @@
 		});
 	});
 
+	setupThemeToggle();
 	syncConditionalFields();
 	syncMediaSource();
 	syncGradientFields();

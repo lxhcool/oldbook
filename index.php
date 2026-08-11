@@ -1,41 +1,31 @@
 <?php
 /**
- * The main template file.
+ * Front page entry — main frame only.
  *
  * @package oldbook
  */
 
-get_header();
-?>
+if (! defined('ABSPATH')) {
+	exit;
+}
+?><!doctype html>
+<html <?php language_attributes(); ?>>
+<head>
+	<meta charset="<?php bloginfo('charset'); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
 
-<div id="primary" class="oldbook-main">
-	<?php if (is_home() && ! is_front_page()) : ?>
-		<header class="page-header">
-			<h1 class="page-title"><?php single_post_title(); ?></h1>
-			<p class="eyebrow"><?php esc_html_e('文章', 'oldbook'); ?></p>
-		</header>
-	<?php endif; ?>
+	<!-- ===== 头部(可自填) ===== -->
 
-	<?php if (have_posts()) : ?>
-		<div class="content-list">
-			<?php while (have_posts()) : the_post(); ?>
-				<?php get_template_part('template-parts/content', get_post_type()); ?>
-			<?php endwhile; ?>
-		</div>
+	<!-- ===== 主体框架(在这里写你的 HTML) ===== -->
+	<main id="primary">
+	44564
+	</main>
 
-		<?php
-		the_posts_navigation(
-			array(
-				'prev_text' => __('更早内容', 'oldbook'),
-				'next_text' => __('更新内容', 'oldbook'),
-			)
-		);
-		?>
-	<?php else : ?>
-		<?php get_template_part('template-parts/content', 'none'); ?>
-	<?php endif; ?>
-</div>
+	<!-- ===== 底部(可自填) ===== -->
 
-<?php
-get_sidebar();
-get_footer();
+	<?php wp_footer(); ?>
+</body>
+</html>
