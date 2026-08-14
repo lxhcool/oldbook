@@ -33,6 +33,16 @@ function oldbook_sanitize_percentage($value) {
 	return min(100, max(0, absint($value)));
 }
 
+function oldbook_sanitize_cover_height($value) {
+	return min(520, max(200, absint($value)));
+}
+
+function oldbook_sanitize_logo_height($value) {
+	$height = absint($value);
+
+	return min(72, max(16, $height ?: 24));
+}
+
 function oldbook_sanitize_cover_direction($value) {
 	$directions = array(
 		'to bottom',
@@ -116,6 +126,10 @@ function oldbook_get_site_logo_url($size = 'thumbnail') {
 	return $image_url ? $image_url : '';
 }
 
+function oldbook_get_logo_height() {
+	return oldbook_sanitize_logo_height(get_theme_mod('oldbook_site_logo_height', 24));
+}
+
 function oldbook_get_cover_image_url() {
 	$cover_id  = absint(get_theme_mod('oldbook_cover_image_id', 0));
 	$cover_url = $cover_id ? wp_get_attachment_url($cover_id) : '';
@@ -136,11 +150,12 @@ function oldbook_get_cover_image_url() {
 }
 
 function oldbook_get_cover_settings() {
+	$cover_height       = oldbook_sanitize_cover_height(get_theme_mod('oldbook_cover_height', 320));
 	$overlay_color      = sanitize_hex_color(get_theme_mod('oldbook_cover_overlay_color', '#11201a'));
 	$overlay_color      = $overlay_color ? $overlay_color : '#11201a';
 	$overlay_opacity    = oldbook_sanitize_percentage(get_theme_mod('oldbook_cover_overlay_opacity', 26));
 	$overlay_alpha      = $overlay_opacity / 100;
-	$gradient_enabled   = (bool) get_theme_mod('oldbook_cover_gradient_enabled', false);
+	$gradient_enabled   = '1' === (string) get_theme_mod('oldbook_cover_gradient_enabled', false);
 	$gradient_start     = sanitize_hex_color(get_theme_mod('oldbook_cover_gradient_start', '#11201a'));
 	$gradient_end       = sanitize_hex_color(get_theme_mod('oldbook_cover_gradient_end', '#1d7a55'));
 	$gradient_direction = oldbook_sanitize_cover_direction(get_theme_mod('oldbook_cover_gradient_direction', 'to bottom'));
@@ -156,6 +171,7 @@ function oldbook_get_cover_settings() {
 	}
 
 	return array(
+		'height'            => $cover_height,
 		'overlay_color'      => $overlay_color,
 		'overlay_opacity'    => $overlay_opacity,
 		'gradient_enabled'   => $gradient_enabled,
@@ -163,6 +179,13 @@ function oldbook_get_cover_settings() {
 		'gradient_end'       => $gradient_end ? $gradient_end : '#1d7a55',
 		'gradient_direction' => $gradient_direction,
 		'overlay'            => $cover_overlay,
+	);
+}
+
+function oldbook_get_layout_settings() {
+	return array(
+		'show_left_sidebar'  => (bool) get_theme_mod('oldbook_show_left_sidebar', true),
+		'show_right_sidebar' => (bool) get_theme_mod('oldbook_show_right_sidebar', true),
 	);
 }
 
@@ -472,6 +495,23 @@ function oldbook_icon($name, $class = '') {
 	$class = $class ? ' ' . sanitize_html_class($class) : '';
 
 	return '<svg class="oldbook-icon' . esc_attr($class) . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[$name] . '</svg>';
+}
+
+function oldbook_iconfont($name, $class = '') {
+	$name = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $name);
+
+	if (! $name) {
+		return '';
+	}
+
+	$classes = 'oldbook-iconfont';
+	if ($class) {
+		$classes .= ' ' . sanitize_html_class($class);
+	}
+
+	$symbol = 'icon-' . $name;
+
+	return '<svg class="' . esc_attr($classes) . '" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false"><use href="#' . esc_attr($symbol) . '" xlink:href="#' . esc_attr($symbol) . '"></use></svg>';
 }
 
 function oldbook_get_site_stats() {

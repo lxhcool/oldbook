@@ -1,25 +1,982 @@
-/*
-Theme Name: oldbook
-Theme URI: https://github.com/lxhcool/oldbook
-Author: lxhcool
-Author URI: https://github.com/lxhcool
-Description: 一个用于文章、动态和书签的 WordPress 主题。
-Version: 3.0.0
-Requires at least: 5.8
-Requires PHP: 7.4
-License: GPL-2.0-or-later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: oldbook
-Tags: blog, portfolio
-*/
+/* ==========================================================================
+   1. Reset / box model baseline
+   ========================================================================== */
+
+:root {
+	--canvas: #ffffff;
+	--surface: #ffffff;
+	--surface-soft: #fffaf7;
+	--surface-hover: #fff2e9;
+	--brand: #fd6605;
+	--brand: color(display-p3 .99 .4 .02);
+	--brand-hover: #e35401;
+	--brand-hover: color(display-p3 .88 .25 .01);
+	--brand-active: #b84001;
+	--brand-active: color(display-p3 .72 .16 .005);
+	--brand-weak: rgba(253, 102, 5, 0.1);
+	--brand-weak: color(display-p3 .99 .4 .02 / 0.1);
+	--focus-ring: rgba(253, 102, 5, 0.32);
+	--focus-ring: color(display-p3 .99 .4 .02 / 0.32);
+	--on-brand: #ffffff;
+	--text-strong: #22223a;
+	--text-primary: #3f3f58;
+	--text-secondary: #787892;
+	--text-tertiary: #a2a2b8;
+	--text-disabled: #c5c5d5;
+	--border: #f0e7e1;
+	--success: #2b956c;
+	--success-bg: #eaf8f1;
+	--shadow-sm: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.12) 0px 8px 40px -12px;
+	--shadow-md: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.12) 0px 8px 40px -12px;
+	--radius-control: 9px;
+	--radius-surface: 14px;
+	--radius-frame: 12px;
+	--radius-pill: 999px;
+	--max: 1420px;
+	--content-width: 600px;
+	--left-rail-width: 224px;
+	--right-rail-width: 274px;
+	--gutter: 28px;
+	--font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+	--font-mono: "SF Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+	--ease: cubic-bezier(0.33, 1, 0.68, 1);
+	--transition: 180ms var(--ease);
+	color-scheme: light;
+}
+
+:root[data-oldbook-theme="dark"] {
+	--canvas: #11101b;
+	--surface: #1b1927;
+	--surface-soft: #211f30;
+	--surface-hover: #2c2841;
+	--brand: #fd6605;
+	--brand: color(display-p3 .99 .4 .02);
+	--brand-hover: #ff8a3d;
+	--brand-hover: color(display-p3 .93 .5 .12);
+	--brand-active: #d95002;
+	--brand-active: color(display-p3 .82 .25 .01);
+	--brand-weak: rgba(253, 102, 5, 0.18);
+	--focus-ring: rgba(253, 102, 5, 0.38);
+	--on-brand: #2b1405;
+	--text-strong: #f2f0fb;
+	--text-primary: #dad6e8;
+	--text-secondary: #a7a1bc;
+	--text-tertiary: #77718f;
+	--text-disabled: #514b65;
+	--border: #312c45;
+	--success: #7ed8ae;
+	--success-bg: #163126;
+	--shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.25);
+	--shadow-md: 0 16px 42px rgba(0, 0, 0, 0.32);
+	color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	min-height: 100%;
+	background: var(--canvas);
+	scroll-behavior: smooth;
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+ul {
+	margin: 0;
+}
 
 body {
-	margin: 0;
+	min-width: 320px;
+	background: var(--canvas);
+	color: var(--text-primary);
+	font-family: var(--font-sans);
+	font-size: 15px;
+	line-height: 1.65;
+	-webkit-font-smoothing: antialiased;
 }
 
-* {
-	box-sizing: border-box;
+button,
+a {
+	font: inherit;
+}
+
+a {
+	color: inherit;
+}
+
+button {
+	border: 0;
+}
+
+img {
+	display: block;
+	max-width: 100%;
+}
+
+*:focus {
+	outline: none;
+}
+
+*:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* ==========================================================================
+   2. Typography baseline
+   ========================================================================== */
+
+.oldbook-kicker,
+.oldbook-section-mark,
+.oldbook-toolbar__path {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.oldbook-identity h1 {
+	color: #ffffff;
+	font-size: 22px;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: 1.18;
+}
+
+.oldbook-identity p {
+	max-width: 38em;
+	color: rgba(255, 255, 255, 0.8);
+	font-size: 13px;
+}
+
+/* ==========================================================================
+   3. Semantic variables are declared above
+   ========================================================================== */
+
+/* ==========================================================================
+   4. Custom scrollbar
+   ========================================================================== */
+
+html {
+	scrollbar-color: var(--text-tertiary) var(--canvas);
+	scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--canvas);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--text-tertiary);
+	border: 3px solid var(--canvas);
+	border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--text-secondary);
+}
+
+/* ==========================================================================
+   5. Navigation
+   ========================================================================== */
+
+.oldbook-skip-link {
+	position: fixed;
+	top: 14px;
+	left: 14px;
+	z-index: 300;
+	padding: 10px 14px;
+	background: var(--surface);
+	border-radius: var(--radius-control);
+	box-shadow: var(--shadow-md);
+	color: var(--text-strong);
+	text-decoration: none;
+	transform: translateY(-180%);
+	transition: transform var(--transition);
+}
+
+.oldbook-skip-link:focus {
+	transform: translateY(0);
+}
+
+.oldbook-app {
+	display: grid;
+	grid-template-columns: var(--left-rail-width) minmax(0, var(--content-width)) var(--right-rail-width);
+	width: min(calc(100% - 48px), calc(var(--left-rail-width) + var(--content-width) + var(--right-rail-width)));
+	min-height: 100vh;
+	margin: 60px auto 0;
+	justify-content: center;
+	background: var(--surface);
+	border-radius: var(--radius-frame) var(--radius-frame) 0 0;
+	overflow: hidden;
+	box-shadow: var(--shadow-md);
+}
+
+.oldbook-app--no-left-sidebar {
+	grid-template-columns: minmax(0, var(--content-width)) var(--right-rail-width);
+	width: min(calc(100% - 48px), calc(var(--content-width) + var(--right-rail-width)));
+}
+
+.oldbook-app--no-right-sidebar {
+	grid-template-columns: var(--left-rail-width) minmax(0, var(--content-width));
+	width: min(calc(100% - 48px), calc(var(--left-rail-width) + var(--content-width)));
+}
+
+.oldbook-app--no-left-sidebar.oldbook-app--no-right-sidebar {
+	grid-template-columns: minmax(0, var(--content-width));
+	width: min(calc(100% - 48px), var(--content-width));
+}
+
+.oldbook-sidebar {
+	display: flex;
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	height: 100vh;
+	min-height: 640px;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 34px 20px 24px;
+	background: var(--surface-soft);
+}
+
+.oldbook-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	max-width: 100%;
+	margin: 0 10px 46px;
+	color: var(--text-strong);
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: -0.025em;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.oldbook-brand__logo {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	height: var(--oldbook-logo-height, 24px);
+	flex: 0 1 auto;
+	border-radius: 0;
+	object-fit: contain;
+}
+
+.oldbook-sidebar__profile img {
+	width: 28px;
+	height: 28px;
+	border-radius: 8px;
+	object-fit: cover;
+}
+
+.oldbook-brand__mark {
+	display: inline-flex;
+	position: relative;
+	width: 24px;
+	height: 28px;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid var(--brand);
+	border-radius: 4px 4px 8px 8px;
+}
+
+.oldbook-brand__mark::after {
+	position: absolute;
+	right: 3px;
+	bottom: -2px;
+	left: 3px;
+	height: 2px;
+	background: var(--surface-soft);
+	content: "";
+}
+
+.oldbook-brand__mark i {
+	display: block;
+	width: 2px;
+	height: 10px;
+	margin: 0 2px;
+	background: var(--brand);
+	transform: rotate(-26deg);
+}
+
+.oldbook-primary-nav__list {
+	display: grid;
+	gap: 6px;
+	margin: 0;
 	padding: 0;
-	margin: 0;
+	list-style: none;
 }
 
+.oldbook-primary-nav a {
+	display: flex;
+	position: relative;
+	align-items: center;
+	gap: 11px;
+	min-height: 42px;
+	padding: 9px 12px;
+	border-radius: var(--radius-control);
+	color: var(--text-secondary);
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background-color var(--transition), color var(--transition), transform var(--transition);
+}
+
+.oldbook-primary-nav a:hover {
+	background: var(--surface-hover);
+	color: var(--text-strong);
+	transform: translateX(2px);
+}
+
+.oldbook-primary-nav .current-menu-item > a,
+.oldbook-primary-nav .current_page_item > a {
+	background: var(--brand);
+	box-shadow: 0 6px 16px rgba(253, 102, 5, 0.2);
+	box-shadow: 0 6px 16px color(display-p3 .99 .4 .02 / 0.2);
+	color: var(--on-brand);
+}
+
+.oldbook-primary-nav .current-menu-item > a:hover,
+.oldbook-primary-nav .current_page_item > a:hover {
+	background: var(--brand-hover);
+	color: var(--on-brand);
+}
+
+.oldbook-sidebar__widgets {
+	display: grid;
+	gap: 16px;
+	margin: 28px 10px 0;
+}
+
+.oldbook-sidebar__widgets .oldbook-widget {
+	min-width: 0;
+}
+
+.oldbook-widget__title {
+	margin: 0 0 10px;
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: 650;
+}
+
+.oldbook-widget ul {
+	margin: 0;
+	padding-left: 18px;
+}
+
+.oldbook-widget li + li {
+	margin-top: 8px;
+}
+
+.oldbook-nav-icon,
+.oldbook-nav-icon .oldbook-icon {
+	display: inline-flex;
+	width: 17px;
+	height: 17px;
+	flex: 0 0 17px;
+}
+
+.oldbook-sidebar__bottom {
+	display: flex;
+	position: relative;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 10px 0;
+}
+
+.oldbook-sidebar__rule {
+	position: absolute;
+	top: 0;
+	right: 10px;
+	left: 10px;
+	height: 1px;
+	background: var(--border);
+}
+
+.oldbook-sidebar__profile {
+	display: flex;
+	position: relative;
+	align-items: center;
+}
+
+.oldbook-sidebar__profile img {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	box-shadow: 0 0 0 3px var(--surface-soft);
+}
+
+.oldbook-sidebar__profile-dot {
+	position: absolute;
+	right: -1px;
+	bottom: -1px;
+	width: 8px;
+	height: 8px;
+	background: var(--success);
+	border: 2px solid var(--surface-soft);
+	border-radius: 50%;
+}
+
+.oldbook-theme-toggle,
+.oldbook-toolbar__menu,
+.oldbook-toolbar__action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	background: transparent;
+	border-radius: 50%;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: background-color var(--transition), color var(--transition), transform var(--transition);
+}
+
+.oldbook-theme-toggle:hover,
+.oldbook-toolbar__menu:hover,
+.oldbook-toolbar__action:hover {
+	background: var(--surface-hover);
+	color: var(--brand);
+	transform: translateY(-1px);
+}
+
+.oldbook-theme-toggle [data-oldbook-theme-icon="dark"] {
+	display: none;
+}
+
+:root[data-oldbook-theme="dark"] .oldbook-theme-toggle [data-oldbook-theme-icon="light"] {
+	display: none;
+}
+
+:root[data-oldbook-theme="dark"] .oldbook-theme-toggle [data-oldbook-theme-icon="dark"] {
+	display: inline-flex;
+}
+
+.oldbook-mobile-backdrop,
+.oldbook-toolbar__menu,
+.oldbook-cover-menu {
+	display: none;
+}
+
+/* ==========================================================================
+   6. Hero / first visual object
+   ========================================================================== */
+
+.oldbook-identity {
+	padding: 0 0 24px;
+}
+
+.oldbook-identity__media {
+	position: relative;
+	overflow: hidden;
+	height: var(--oldbook-cover-height, 320px);
+	border-radius: 0;
+	background: #2c3458;
+	box-shadow: var(--shadow-sm);
+}
+
+.oldbook-app--no-left-sidebar .oldbook-identity__media {
+	border-top-left-radius: var(--radius-frame);
+}
+
+.oldbook-app--no-right-sidebar .oldbook-identity__media {
+	border-top-right-radius: var(--radius-frame);
+}
+
+.oldbook-identity__media img,
+.oldbook-identity__veil {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.oldbook-identity__media img {
+	object-fit: cover;
+}
+
+.oldbook-identity__veil {
+	background: var(--oldbook-cover-overlay, rgba(24, 28, 59, 0.48));
+}
+
+.oldbook-identity__copy {
+	display: grid;
+	position: absolute;
+	inset: auto 24px 24px;
+	gap: 8px;
+}
+
+.oldbook-kicker {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+/* ==========================================================================
+   7. Main layout and sections
+   ========================================================================== */
+
+.oldbook-main {
+	width: 100%;
+	max-width: var(--content-width);
+	min-width: 0;
+	min-height: 100vh;
+	padding: 0 0 64px;
+	background: var(--surface);
+}
+
+.oldbook-toolbar {
+	display: flex;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	align-items: center;
+	justify-content: space-between;
+	height: 64px;
+	padding: 0 28px;
+	background: rgba(255, 255, 255, 0.92);
+	backdrop-filter: blur(14px);
+}
+
+:root[data-oldbook-theme="dark"] .oldbook-toolbar {
+	background: rgba(27, 25, 39, 0.92);
+}
+
+.oldbook-toolbar__path {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-tertiary);
+}
+
+.oldbook-toolbar__path-dot,
+.oldbook-section-mark {
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	background: var(--brand);
+	border-radius: 50%;
+}
+
+.oldbook-toolbar__actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.oldbook-toolbar__action {
+	width: 36px;
+	height: 36px;
+	color: var(--text-tertiary);
+	text-decoration: none;
+}
+
+.oldbook-content-stage {
+	position: relative;
+	min-height: 540px;
+	margin: 0;
+	padding: 26px 0 0;
+}
+
+.oldbook-cover-menu {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 4;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	background: rgba(255, 255, 255, 0.86);
+	border-radius: 50%;
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: background-color var(--transition), color var(--transition), transform var(--transition);
+}
+
+.oldbook-cover-menu:hover {
+	background: var(--surface);
+	color: var(--brand);
+	transform: translateY(-1px);
+}
+
+.oldbook-cover-menu:active {
+	transform: scale(0.97);
+	transition-duration: 100ms;
+}
+
+.oldbook-cover-menu:focus-visible {
+	box-shadow: 0 0 0 3px var(--focus-ring), inset 0 0 0 1px var(--brand);
+}
+
+.oldbook-content-stage__head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 0 4px 18px;
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: 650;
+}
+
+/* ==========================================================================
+   8. Right rail and small components
+   ========================================================================== */
+
+.oldbook-right-rail {
+	display: grid;
+	align-content: start;
+	min-width: 0;
+	padding: 22px 20px 28px;
+	background: var(--surface-soft);
+}
+
+
+.oldbook-right-rail__widgets {
+	display: grid;
+	align-content: start;
+	gap: 20px;
+	min-height: calc(100vh - 82px);
+}
+
+.oldbook-right-rail__widgets .oldbook-widget {
+	min-width: 0;
+	padding: 0;
+	background: transparent;
+	border-radius: var(--radius-control);
+	box-shadow: none;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget__title {
+	margin-bottom: 14px;
+	color: var(--text-primary);
+}
+
+.oldbook-right-rail__widgets .oldbook-widget ul {
+	padding-left: 18px;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget p:last-child {
+	margin-bottom: 0;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget a {
+	color: var(--text-primary);
+}
+
+.oldbook-right-rail__widgets .oldbook-widget a:hover {
+	color: var(--brand);
+}
+
+.oldbook-right-rail__widgets .oldbook-widget img {
+	max-width: 100%;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget table {
+	width: 100%;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget .widget-title {
+	font-size: 12px;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget > :last-child {
+	margin-bottom: 0;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget .screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget .calendar_wrap {
+	overflow-x: auto;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget .calendar_wrap table {
+	min-width: 190px;
+}
+
+.oldbook-right-rail__widgets .oldbook-widget .tagcloud {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.oldbook-sidebar__widgets .widget_oldbook_yiyan,
+.oldbook-right-rail__widgets .widget_oldbook_yiyan {
+	padding: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+.oldbook-yiyan-card {
+	position: relative;
+	overflow: hidden;
+	aspect-ratio: 3 / 2;
+	border-radius: var(--radius-surface);
+	background: #2c3458;
+	box-shadow: var(--shadow-sm);
+	isolation: isolate;
+}
+
+.oldbook-yiyan-card__image,
+.oldbook-yiyan-card__veil {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.oldbook-yiyan-card__image {
+	z-index: -2;
+	object-fit: cover;
+}
+
+.oldbook-yiyan-card__veil {
+	z-index: -1;
+	background: linear-gradient(180deg, transparent 18%, var(--oldbook-yiyan-overlay, rgba(17, 32, 26, 0.26)) 100%);
+}
+
+.oldbook-yiyan-card__refresh {
+	display: grid;
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 2;
+	width: 24px;
+	height: 24px;
+	place-items: center;
+	padding: 0;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.14);
+	color: rgba(255, 255, 255, 0.92);
+	cursor: pointer;
+	transition: background-color 180ms ease;
+}
+
+.oldbook-yiyan-card__refresh svg {
+	width: 14px;
+	height: 14px;
+}
+
+.oldbook-iconfont {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+	vertical-align: -0.125em;
+}
+
+.oldbook-yiyan-card__refresh:focus-visible {
+	box-shadow: 0 0 0 3px var(--focus-ring);
+	outline: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.oldbook-yiyan-card__refresh:hover {
+		background: rgba(0, 0, 0, 0.3);
+	}
+}
+
+.oldbook-yiyan-card__refresh.is-loading svg {
+	animation: oldbook-yiyan-refresh-spin 700ms linear infinite;
+}
+
+.oldbook-yiyan-card__content {
+	display: flex;
+	position: relative;
+	z-index: 1;
+	box-sizing: border-box;
+	height: 100%;
+	flex-direction: column;
+	justify-content: flex-end;
+	padding: 16px 14px;
+	color: #ffffff;
+}
+
+.oldbook-yiyan-card__quote {
+	margin: 0;
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0;
+	line-height: 1.45;
+}
+
+@keyframes oldbook-yiyan-refresh-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* ==========================================================================
+   9. Responsive behavior
+   ========================================================================== */
+
+@media (max-width: 1100px) {
+	:root {
+		--left-rail-width: 202px;
+		--right-rail-width: 236px;
+	}
+
+	.oldbook-app {
+		width: min(calc(100% - 32px), calc(var(--left-rail-width) + var(--content-width) + var(--right-rail-width)));
+	}
+
+	.oldbook-app--no-left-sidebar {
+		width: min(calc(100% - 32px), calc(var(--content-width) + var(--right-rail-width)));
+	}
+
+	.oldbook-app--no-right-sidebar {
+		width: min(calc(100% - 32px), calc(var(--left-rail-width) + var(--content-width)));
+	}
+
+	.oldbook-app--no-left-sidebar.oldbook-app--no-right-sidebar {
+		width: min(calc(100% - 32px), var(--content-width));
+	}
+
+	.oldbook-sidebar {
+		padding-right: 14px;
+		padding-left: 14px;
+	}
+
+	.oldbook-brand {
+		margin-right: 6px;
+		margin-left: 6px;
+	}
+
+	.oldbook-identity,
+	.oldbook-content-stage {
+		margin-right: 0;
+		margin-left: 0;
+	}
+}
+
+@media (max-width: 768px) {
+	:root {
+		--left-rail-width: 0px;
+		--right-rail-width: 0px;
+	}
+
+	.oldbook-app {
+		display: block;
+		width: 100%;
+		margin: 0;
+		border-radius: 0;
+		overflow: visible;
+		box-shadow: none;
+	}
+
+	.oldbook-app--no-left-sidebar,
+	.oldbook-app--no-right-sidebar,
+	.oldbook-app--no-left-sidebar.oldbook-app--no-right-sidebar {
+		width: 100%;
+	}
+
+	.oldbook-sidebar {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 100;
+		width: min(82vw, 300px);
+		height: 100vh;
+		min-height: 0;
+		box-shadow: var(--shadow-md);
+		transform: translateX(-104%);
+		transition: transform 240ms var(--ease);
+	}
+
+	.oldbook-app.is-menu-open .oldbook-sidebar {
+		transform: translateX(0);
+	}
+
+	.oldbook-mobile-backdrop {
+		display: block;
+		position: fixed;
+		inset: 0;
+		z-index: 90;
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		background: rgba(24, 24, 40, 0.28);
+		cursor: pointer;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 200ms var(--ease);
+	}
+
+	.oldbook-app.is-menu-open .oldbook-mobile-backdrop {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.oldbook-identity {
+		padding: 0 0 18px;
+	}
+
+	.oldbook-identity__media {
+		height: min(var(--oldbook-cover-height, 320px), 240px);
+	}
+
+	.oldbook-identity__copy {
+		right: 18px;
+		bottom: 18px;
+		left: 18px;
+	}
+
+	.oldbook-content-stage {
+		min-height: 480px;
+		margin: 0;
+		padding-top: 16px;
+	}
+
+	.oldbook-cover-menu {
+		display: inline-flex;
+	}
+
+	.oldbook-right-rail {
+		display: none;
+	}
+}
+
+@media (max-width: 420px) {
+	.oldbook-toolbar__path {
+		font-size: 10px;
+	}
+
+	.oldbook-identity h1 {
+		font-size: 22px;
+	}
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+	}
+}

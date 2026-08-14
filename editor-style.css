@@ -1,0 +1,7 @@
+/* Keep the editor close to the public reading surface. */
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+	color: #27272a;
+	font-size: 15px;
+	line-height: 1.7;
+}

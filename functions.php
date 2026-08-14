@@ -14,6 +14,7 @@ require_once get_template_directory() . '/inc/content-types.php';
 require_once get_template_directory() . '/inc/markdown.php';
 require_once get_template_directory() . '/inc/interactions.php';
 require_once get_template_directory() . '/inc/admin.php';
+require_once get_template_directory() . '/inc/widgets.php';
 
 function oldbook_setup() {
 	load_theme_textdomain('oldbook', get_template_directory() . '/languages');
@@ -56,12 +57,24 @@ add_action('after_setup_theme', 'oldbook_set_content_width', 0);
 function oldbook_widgets_init() {
 	register_sidebar(
 		array(
-			'name'          => __('侧栏', 'oldbook'),
+			'name'          => __('右侧小工具', 'oldbook'),
 			'id'            => 'sidebar-1',
-			'description'   => __('添加小工具，它们会显示在右侧栏。', 'oldbook'),
-			'before_widget' => '<section id="%1$s" class="widget %2$s">',
+			'description'   => __('添加小工具，它们会显示在右侧栏；没有小工具时保持空白。', 'oldbook'),
+			'before_widget' => '<section id="%1$s" class="oldbook-widget %2$s">',
 			'after_widget'  => '</section>',
-			'before_title'  => '<h2 class="widget-title">',
+			'before_title'  => '<h2 class="oldbook-widget__title widget-title">',
+			'after_title'   => '</h2>',
+		)
+	);
+
+	register_sidebar(
+		array(
+			'name'          => __('左侧小工具', 'oldbook'),
+			'id'            => 'sidebar-left',
+			'description'   => __('添加小工具，它们会显示在左侧栏；导航菜单不计入小工具。', 'oldbook'),
+			'before_widget' => '<section id="%1$s" class="oldbook-widget %2$s">',
+			'after_widget'  => '</section>',
+			'before_title'  => '<h2 class="oldbook-widget__title widget-title">',
 			'after_title'   => '</h2>',
 		)
 	);
@@ -88,6 +101,15 @@ function oldbook_enqueue_styles() {
 		$theme->get('Version')
 	);
 
+	$iconfont_path = get_template_directory() . '/assets/iconfont/iconfont.js';
+	wp_enqueue_script(
+		'oldbook-iconfont',
+		get_template_directory_uri() . '/assets/iconfont/iconfont.js',
+		array(),
+		file_exists($iconfont_path) ? (string) filemtime($iconfont_path) : $theme->get('Version'),
+		true
+	);
+
 	if (is_singular('post')) {
 		wp_enqueue_style(
 			'oldbook-highlight',
@@ -104,10 +126,15 @@ function oldbook_enqueue_styles() {
 		);
 	}
 
+	$oldbook_script_dependencies = array('oldbook-iconfont');
+	if (is_singular('post')) {
+		$oldbook_script_dependencies[] = 'oldbook-highlight';
+	}
+
 	wp_enqueue_script(
 		'oldbook-script',
 		get_template_directory_uri() . '/assets/js/oldbook.js',
-		is_singular('post') ? array('oldbook-highlight') : array(),
+		$oldbook_script_dependencies,
 		$theme->get('Version'),
 		true
 	);
@@ -119,6 +146,7 @@ function oldbook_enqueue_styles() {
 			'ajaxUrl'  => admin_url('admin-ajax.php'),
 			'likeNonce' => wp_create_nonce('oldbook_like'),
 			'commentNonce' => wp_create_nonce('oldbook_comment'),
+			'yiyanNonce' => wp_create_nonce('oldbook_yiyan'),
 		)
 	);
 }
