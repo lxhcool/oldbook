@@ -45,11 +45,17 @@
 	function syncRangeOutputs() {
 		document.querySelectorAll('[data-oldbook-range]').forEach(function (input) {
 			var output = document.querySelector('[data-oldbook-range-output="' + input.id + '"]');
+			var min = Number(input.min || 0);
+			var max = Number(input.max || 100);
+			var value = Number(input.value);
+			var percent = max > min ? Math.round(((value - min) / (max - min)) * 100) : 0;
 
 			if (output) {
 				var suffix = output.getAttribute('data-oldbook-range-suffix') || '%';
 				output.textContent = input.value + suffix;
 			}
+
+			input.style.setProperty('--oldbook-range-fill', percent + '%');
 		});
 	}
 
@@ -108,6 +114,27 @@
 			image.src = objectUrl;
 			image.alt = '';
 			preview.replaceChildren(image);
+			preview.setAttribute('data-oldbook-logo-label', '更换 Logo');
+		});
+	}
+
+	function setupLogoRemove() {
+		document.querySelectorAll('[data-oldbook-remove-logo]').forEach(function (button) {
+			button.addEventListener('click', function () {
+				var input = document.querySelector('[data-oldbook-remove-logo-input]');
+				var form;
+
+				if (!input || !window.confirm('确定移除当前 Logo 吗？')) {
+					return;
+				}
+
+				input.value = '1';
+				form = button.closest('form');
+
+				if (form) {
+					form.submit();
+				}
+			});
 		});
 	}
 
@@ -186,9 +213,11 @@
 			option.addEventListener('click', function () {
 				var left = option.getAttribute('data-oldbook-layout-left');
 				var right = option.getAttribute('data-oldbook-layout-right');
+				var mini = option.getAttribute('data-oldbook-layout-mini');
 
 				setPickerValue('show-left-sidebar', left);
 				setPickerValue('show-right-sidebar', right);
+				setPickerValue('mini-left-sidebar', mini || '0');
 
 				document.querySelectorAll('[data-oldbook-layout-choice]').forEach(function (item) {
 					var selected = item === option;
@@ -198,6 +227,79 @@
 				});
 			});
 		});
+	}
+
+	function setupSettingsTabs() {
+		var nav = document.querySelector('.oldbook-settings-tabs');
+
+		if (!nav) {
+			return;
+		}
+
+		var links = Array.prototype.slice.call(nav.querySelectorAll('a[href^="#"]'));
+		var sections = links
+			.map(function (link) {
+				return document.querySelector(link.getAttribute('href'));
+			})
+			.filter(Boolean);
+
+		if (!sections.length) {
+			return;
+		}
+
+		var currentIndex = -1;
+
+		function setActiveTab(index) {
+			if (index === currentIndex) {
+				return;
+			}
+
+			currentIndex = index;
+
+			links.forEach(function (link, i) {
+				var active = i === index;
+
+				link.classList.toggle('is-current', active);
+
+				if (active) {
+					link.setAttribute('aria-current', 'page');
+				} else {
+					link.removeAttribute('aria-current');
+				}
+			});
+		}
+
+		function updateActiveTab() {
+			var offset = nav.getBoundingClientRect().height + 24;
+			var index = 0;
+
+			sections.forEach(function (section, i) {
+				if (section.getBoundingClientRect().top - offset <= 0) {
+					index = i;
+				}
+			});
+
+			setActiveTab(index);
+		}
+
+		links.forEach(function (link, index) {
+			link.addEventListener('click', function (event) {
+				var target = sections[index];
+				var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+				if (!target) {
+					return;
+				}
+
+				event.preventDefault();
+				setActiveTab(index);
+				target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+			});
+		});
+
+		window.addEventListener('scroll', updateActiveTab, { passive: true });
+		window.addEventListener('resize', updateActiveTab);
+		updateActiveTab();
 	}
 
 	document.querySelectorAll('[data-oldbook-picker]').forEach(function (option) {
@@ -276,7 +378,9 @@
 	});
 
 	setupLayoutPicker();
+	setupSettingsTabs();
 	setupLogoPicker();
+	setupLogoRemove();
 	syncConditionalFields();
 	syncMediaSource();
 	syncGradientFields();

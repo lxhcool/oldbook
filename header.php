@@ -23,6 +23,10 @@ if (! $layout_settings['show_left_sidebar']) {
 if (! $layout_settings['show_right_sidebar']) {
 	$app_classes .= ' oldbook-app--no-right-sidebar';
 }
+
+if ($layout_settings['show_left_sidebar'] && $layout_settings['mini_left_sidebar']) {
+	$app_classes .= ' oldbook-app--mini-left-sidebar';
+}
 ?>
 <!doctype html>
 <html <?php language_attributes(); ?>>
@@ -49,10 +53,12 @@ if (! $layout_settings['show_right_sidebar']) {
 						<?php endif; ?>
 					</a>
 
-					<nav class="oldbook-primary-nav">
-						<?php
-						$locations = get_nav_menu_locations();
-						if (! empty($locations['primary'])) :
+					<?php
+					$locations = get_nav_menu_locations();
+					if (! empty($locations['primary'])) :
+						?>
+						<nav class="oldbook-primary-nav">
+							<?php
 							wp_nav_menu(
 								array(
 									'theme_location' => 'primary',
@@ -61,36 +67,9 @@ if (! $layout_settings['show_right_sidebar']) {
 									'fallback_cb'    => false,
 								)
 							);
-						else :
 							?>
-							<ul class="oldbook-primary-nav__list">
-								<li class="current-menu-item">
-									<a href="<?php echo esc_url(home_url('/')); ?>" aria-current="page">
-										<span class="oldbook-nav-icon" aria-hidden="true"><?php echo oldbook_icon('activity'); ?></span>
-										<span><?php esc_html_e('首页', 'oldbook'); ?></span>
-									</a>
-								</li>
-								<li>
-									<a href="<?php echo esc_url(oldbook_get_articles_url()); ?>">
-										<span class="oldbook-nav-icon" aria-hidden="true"><?php echo oldbook_icon('edit'); ?></span>
-										<span><?php esc_html_e('文章', 'oldbook'); ?></span>
-									</a>
-								</li>
-								<li>
-									<a href="<?php echo esc_url(home_url('/dynamics/')); ?>">
-										<span class="oldbook-nav-icon" aria-hidden="true"><?php echo oldbook_icon('message-circle'); ?></span>
-										<span><?php esc_html_e('动态', 'oldbook'); ?></span>
-									</a>
-								</li>
-								<li>
-									<a href="<?php echo esc_url(home_url('/bookmarks/')); ?>">
-										<span class="oldbook-nav-icon" aria-hidden="true"><?php echo oldbook_icon('link'); ?></span>
-										<span><?php esc_html_e('书签', 'oldbook'); ?></span>
-									</a>
-								</li>
-							</ul>
-						<?php endif; ?>
-					</nav>
+						</nav>
+					<?php endif; ?>
 				</div>
 
 				<?php if (is_active_sidebar('sidebar-left')) : ?>
@@ -98,17 +77,5 @@ if (! $layout_settings['show_right_sidebar']) {
 						<?php dynamic_sidebar('sidebar-left'); ?>
 					</div>
 				<?php endif; ?>
-
-				<div class="oldbook-sidebar__bottom">
-					<div class="oldbook-sidebar__rule" aria-hidden="true"></div>
-					<div class="oldbook-sidebar__profile">
-						<img src="<?php echo esc_url(oldbook_get_user_avatar_url(48)); ?>" alt="">
-						<span class="oldbook-sidebar__profile-dot" aria-hidden="true"></span>
-					</div>
-					<button class="oldbook-theme-toggle" type="button" data-oldbook-theme-toggle aria-pressed="false" aria-label="<?php esc_attr_e('切换深色模式', 'oldbook'); ?>" title="<?php esc_attr_e('切换深色模式', 'oldbook'); ?>">
-						<span data-oldbook-theme-icon="light" aria-hidden="true"><?php echo oldbook_icon('sun'); ?></span>
-						<span data-oldbook-theme-icon="dark" aria-hidden="true"><?php echo oldbook_icon('moon'); ?></span>
-					</button>
-				</div>
 			</aside>
 			<?php endif; ?>

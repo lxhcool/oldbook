@@ -93,12 +93,13 @@ add_action('init', 'oldbook_register_pattern_categories', 5);
 
 function oldbook_enqueue_styles() {
 	$theme = wp_get_theme();
+	$style_path = get_template_directory() . '/style.css';
 
 	wp_enqueue_style(
 		'oldbook-style',
 		get_stylesheet_uri(),
 		array(),
-		$theme->get('Version')
+		file_exists($style_path) ? (string) filemtime($style_path) : $theme->get('Version')
 	);
 
 	$iconfont_path = get_template_directory() . '/assets/iconfont/iconfont.js';
@@ -107,6 +108,15 @@ function oldbook_enqueue_styles() {
 		get_template_directory_uri() . '/assets/iconfont/iconfont.js',
 		array(),
 		file_exists($iconfont_path) ? (string) filemtime($iconfont_path) : $theme->get('Version'),
+		true
+	);
+
+	$iconfont_fix_path = get_template_directory() . '/assets/js/oldbook-iconfont.js';
+	wp_enqueue_script(
+		'oldbook-iconfont-fix',
+		get_template_directory_uri() . '/assets/js/oldbook-iconfont.js',
+		array('oldbook-iconfont'),
+		file_exists($iconfont_fix_path) ? (string) filemtime($iconfont_fix_path) : $theme->get('Version'),
 		true
 	);
 
@@ -126,7 +136,16 @@ function oldbook_enqueue_styles() {
 		);
 	}
 
-	$oldbook_script_dependencies = array('oldbook-iconfont');
+	$alpine_path = get_template_directory() . '/assets/js/alpine.min.js';
+	wp_enqueue_script(
+		'oldbook-alpine',
+		get_template_directory_uri() . '/assets/js/alpine.min.js',
+		array(),
+		file_exists($alpine_path) ? (string) filemtime($alpine_path) : $theme->get('Version'),
+		true
+	);
+
+	$oldbook_script_dependencies = array('oldbook-iconfont', 'oldbook-alpine');
 	if (is_singular('post')) {
 		$oldbook_script_dependencies[] = 'oldbook-highlight';
 	}

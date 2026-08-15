@@ -1,6 +1,6 @@
 <?php
 /**
- * Main site frame. Content templates can plug into the central column later.
+ * Single post template.
  *
  * @package oldbook
  */
@@ -9,62 +9,44 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-$cover_url = oldbook_get_cover_image_url();
-$cover_settings = oldbook_get_cover_settings();
-$site_title = oldbook_get_site_title();
 $layout_settings = oldbook_get_layout_settings();
-$home_content = oldbook_get_home_content();
-$update_cat   = absint(get_query_var('update_cat'));
-$article_cat  = absint(get_query_var('article_cat'));
-$current_cat  = 'updates' === $home_content ? $update_cat : $article_cat;
 
 get_header();
-?>
+
+while (have_posts()) :
+	the_post();
+	?>
 			<main id="primary" class="oldbook-main">
 				<?php oldbook_render_identity(); ?>
 
-				<?php oldbook_render_category_nav('updates' === $home_content ? 'update_category' : 'category', $current_cat); ?>
+				<section class="oldbook-content-stage" aria-label="<?php esc_attr_e('文章内容', 'oldbook'); ?>">
+					<article class="oldbook-single">
+						<header class="oldbook-single__head">
+							<?php $post_cats = oldbook_get_post_categories(); ?>
+							<?php if ($post_cats) : ?>
+								<div class="oldbook-single__cats">
+									<?php foreach ($post_cats as $cat) : ?>
+										<a class="oldbook-single__cat" href="<?php echo esc_url(get_term_link($cat)); ?>"># <?php echo esc_html($cat->name); ?></a>
+									<?php endforeach; ?>
+								</div>
+							<?php endif; ?>
+							<h1 class="oldbook-single__title"><?php the_title(); ?></h1>
+							<div class="oldbook-article__meta">
+								<span class="oldbook-article__author">@<?php the_author(); ?></span>
+								<time datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(oldbook_time_ago(get_the_date('U'))); ?></time>
+							</div>
+						</header>
 
-				<section class="oldbook-content-stage" aria-label="<?php esc_attr_e('主要内容', 'oldbook'); ?>">
-					<div class="oldbook-feed">
-						<?php
-						$feed_args = array(
-							'post_type'           => 'updates' === $home_content ? 'oldbook_update' : 'post',
-							'post_status'         => 'publish',
-							'posts_per_page'      => 'updates' === $home_content ? 30 : 12,
-							'ignore_sticky_posts' => 'updates' === $home_content,
-						);
+						<div class="oldbook-single__content">
+							<?php the_content(); ?>
+						</div>
 
-						if ('updates' === $home_content && $update_cat) {
-							$feed_args['tax_query'] = array(
-								array(
-									'taxonomy' => 'update_category',
-									'field'    => 'term_id',
-									'terms'    => $update_cat,
-								),
-							);
-						} elseif ('articles' === $home_content && $article_cat) {
-							$feed_args['cat'] = $article_cat;
-						}
-
-						$feed_query = new WP_Query($feed_args);
-
-						if ($feed_query->have_posts()) :
-							while ($feed_query->have_posts()) :
-								$feed_query->the_post();
-
-								if ('updates' === $home_content) :
-									oldbook_render_update_card(get_the_ID());
-								else :
-									oldbook_render_article_card();
-								endif;
-							endwhile;
-							wp_reset_postdata();
-						else :
-							?>
-							<p class="oldbook-feed__empty"><?php echo 'updates' === $home_content ? esc_html__('还没有动态，去后台发布第一条吧。', 'oldbook') : esc_html__('还没有文章。', 'oldbook'); ?></p>
+						<?php if (comments_open() || get_comments_number()) : ?>
+							<div class="oldbook-single__comments">
+								<?php comments_template(); ?>
+							</div>
 						<?php endif; ?>
-					</div>
+					</article>
 				</section>
 			</main>
 
@@ -104,6 +86,7 @@ get_header();
 				</div>
 			</aside>
 			<?php endif; ?>
-<?php
+	<?php
+endwhile;
 
 get_footer();

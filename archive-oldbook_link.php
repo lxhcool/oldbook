@@ -1,6 +1,6 @@
 <?php
 /**
- * Main site frame. Content templates can plug into the central column later.
+ * Bookmarks archive: personal bookmarks and friend links, grouped.
  *
  * @package oldbook
  */
@@ -9,62 +9,77 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-$cover_url = oldbook_get_cover_image_url();
-$cover_settings = oldbook_get_cover_settings();
-$site_title = oldbook_get_site_title();
 $layout_settings = oldbook_get_layout_settings();
-$home_content = oldbook_get_home_content();
-$update_cat   = absint(get_query_var('update_cat'));
-$article_cat  = absint(get_query_var('article_cat'));
-$current_cat  = 'updates' === $home_content ? $update_cat : $article_cat;
 
 get_header();
 ?>
 			<main id="primary" class="oldbook-main">
 				<?php oldbook_render_identity(); ?>
 
-				<?php oldbook_render_category_nav('updates' === $home_content ? 'update_category' : 'category', $current_cat); ?>
+				<section class="oldbook-content-stage" aria-label="<?php esc_attr_e('书签与友链', 'oldbook'); ?>">
+					<?php
+					$groups = oldbook_get_link_groups();
+					$has_links = false;
 
-				<section class="oldbook-content-stage" aria-label="<?php esc_attr_e('主要内容', 'oldbook'); ?>">
-					<div class="oldbook-feed">
-						<?php
-						$feed_args = array(
-							'post_type'           => 'updates' === $home_content ? 'oldbook_update' : 'post',
-							'post_status'         => 'publish',
-							'posts_per_page'      => 'updates' === $home_content ? 30 : 12,
-							'ignore_sticky_posts' => 'updates' === $home_content,
+					foreach ($groups as $group_slug => $group_label) :
+						$group_query = new WP_Query(
+							array(
+								'post_type'      => 'oldbook_link',
+								'post_status'    => 'publish',
+								'posts_per_page' => 100,
+								'meta_key'       => '_oldbook_link_group',
+								'meta_value'     => $group_slug,
+							)
 						);
 
-						if ('updates' === $home_content && $update_cat) {
-							$feed_args['tax_query'] = array(
-								array(
-									'taxonomy' => 'update_category',
-									'field'    => 'term_id',
-									'terms'    => $update_cat,
-								),
-							);
-						} elseif ('articles' === $home_content && $article_cat) {
-							$feed_args['cat'] = $article_cat;
+						if (! $group_query->have_posts()) {
+							continue;
 						}
 
-						$feed_query = new WP_Query($feed_args);
+						$has_links = true;
+						?>
+						<section class="oldbook-link-group" aria-label="<?php echo esc_attr($group_label); ?>">
+							<h2 class="oldbook-link-group__title">
+								<span class="oldbook-link-group__mark" aria-hidden="true"></span>
+								<?php echo esc_html($group_label); ?>
+							</h2>
+							<div class="oldbook-link-grid">
+								<?php
+								while ($group_query->have_posts()) :
+									$group_query->the_post();
+									$link_url   = oldbook_get_link_url(get_the_ID());
+									$link_icon  = oldbook_get_link_icon_url(get_the_ID());
+									$link_desc  = oldbook_get_link_description(get_the_ID());
+									$link_host  = $link_url ? wp_parse_url($link_url, PHP_URL_HOST) : '';
+									$link_host  = $link_host ? preg_replace('/^www\./', '', $link_host) : '';
+									?>
+									<a class="oldbook-link-card" href="<?php echo esc_url($link_url); ?>" target="_blank" rel="noopener nofollow">
+										<?php if ($link_icon) : ?>
+											<img class="oldbook-link-card__icon" src="<?php echo esc_url($link_icon); ?>" alt="" loading="lazy">
+										<?php else : ?>
+											<span class="oldbook-link-card__icon oldbook-link-card__icon--fallback" aria-hidden="true"><?php echo esc_html(mb_substr(get_the_title(), 0, 1)); ?></span>
+										<?php endif; ?>
+										<span class="oldbook-link-card__body">
+											<strong class="oldbook-link-card__name"><?php the_title(); ?></strong>
+											<?php if ($link_desc) : ?>
+												<span class="oldbook-link-card__desc"><?php echo esc_html($link_desc); ?></span>
+											<?php endif; ?>
+											<?php if ($link_host) : ?>
+												<span class="oldbook-link-card__host"><?php echo esc_html($link_host); ?></span>
+											<?php endif; ?>
+										</span>
+									</a>
+								<?php endwhile; ?>
+							</div>
+						</section>
+						<?php
+						wp_reset_postdata();
+					endforeach;
 
-						if ($feed_query->have_posts()) :
-							while ($feed_query->have_posts()) :
-								$feed_query->the_post();
-
-								if ('updates' === $home_content) :
-									oldbook_render_update_card(get_the_ID());
-								else :
-									oldbook_render_article_card();
-								endif;
-							endwhile;
-							wp_reset_postdata();
-						else :
-							?>
-							<p class="oldbook-feed__empty"><?php echo 'updates' === $home_content ? esc_html__('还没有动态，去后台发布第一条吧。', 'oldbook') : esc_html__('还没有文章。', 'oldbook'); ?></p>
-						<?php endif; ?>
-					</div>
+					if (! $has_links) :
+						?>
+						<p class="oldbook-feed__empty"><?php esc_html_e('还没有书签和友链，去后台添加吧。', 'oldbook'); ?></p>
+					<?php endif; ?>
 				</section>
 			</main>
 

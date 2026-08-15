@@ -12,7 +12,7 @@ if (! defined('ABSPATH')) {
 function oldbook_is_public_update($post_id) {
 	$post = get_post(absint($post_id));
 
-	return $post && 'oldbook_update' === $post->post_type && 'publish' === $post->post_status;
+	return $post && in_array($post->post_type, array('oldbook_update', 'post'), true) && 'publish' === $post->post_status;
 }
 
 function oldbook_get_like_count($post_id = 0) {
@@ -78,23 +78,95 @@ function oldbook_set_like_state($post_id, $liked) {
 	oldbook_set_guest_like_cookie($post_id, $liked);
 }
 
+function oldbook_render_update_media($post_id, $type = '') {
+	$post_id = absint($post_id);
+	$type    = $type ? $type : oldbook_get_update_type($post_id);
+
+	if ('photo' === $type) {
+		$ids = oldbook_get_photo_ids($post_id);
+
+		if ($ids) {
+			echo '<div class="oldbook-update-media oldbook-update-media--photo">';
+			foreach ($ids as $attachment_id) {
+				$src = wp_get_attachment_image_url($attachment_id, 'large');
+
+				if ($src) {
+					echo '<img src="' . esc_url($src) . '" alt="" loading="lazy">';
+				}
+			}
+			echo '</div>';
+		}
+
+		return;
+	}
+
+	if (in_array($type, array('music', 'video'), true)) {
+		$url = oldbook_get_update_media_url($post_id, $type);
+
+		if ($url) {
+			echo '<div class="oldbook-update-media oldbook-update-media--link">';
+			echo '<a href="' . esc_url($url) . '" target="_blank" rel="noopener nofollow">';
+			echo oldbook_icon($type);
+			echo '<span>' . esc_html('music' === $type ? __('试听音乐', 'oldbook') : __('观看视频', 'oldbook')) . '</span>';
+			echo '</a>';
+			echo '</div>';
+		}
+	}
+}
+
+function oldbook_render_update_card($post_id) {
+	$post_id = absint($post_id);
+	$type    = oldbook_get_update_type($post_id);
+	$types   = oldbook_get_update_types();
+	$content = get_post_field('post_content', $post_id);
+	$content = oldbook_render_markdown((string) $content);
+	$author  = get_the_author_meta('display_name', (int) get_post_field('post_author', $post_id));
+	$author  = $author ? $author : __('站长', 'oldbook');
+	?>
+	<article class="oldbook-feed-card oldbook-feed-card--update" data-post-id="<?php echo esc_attr($post_id); ?>">
+		<div class="oldbook-update__meta">
+			<div class="oldbook-update__avatar">
+				<img src="<?php echo esc_url(oldbook_get_user_avatar_url(48)); ?>" alt="">
+			</div>
+			<div class="oldbook-update__identity">
+				<strong class="oldbook-update__author"><?php echo esc_html($author); ?></strong>
+				<time class="oldbook-update__date" datetime="<?php echo esc_attr(get_the_date(DATE_W3C, $post_id)); ?>"><?php echo esc_html(oldbook_time_ago(get_the_date('U', $post_id))); ?></time>
+			</div>
+		</div>
+
+		<div class="oldbook-update__body">
+			<div class="oldbook-update__content"><?php echo $content; ?></div>
+			<?php oldbook_render_update_media($post_id, $type); ?>
+
+			<div class="oldbook-update__footer">
+				<?php oldbook_render_update_social($post_id); ?>
+			</div>
+			<?php oldbook_render_update_comments($post_id); ?>
+		</div>
+	</article>
+	<?php
+}
+
 function oldbook_render_comment_item($comment) {
 	$comment_id = absint($comment->comment_ID);
 	$author     = get_comment_author($comment);
 	$author     = $author ? $author : __('评论者', 'oldbook');
-
-	ob_start();
 	?>
 	<li class="oldbook-comment" data-comment-id="<?php echo esc_attr($comment_id); ?>">
-		<div class="oldbook-comment__meta">
-			<strong><?php echo esc_html($author); ?></strong>
-			<time datetime="<?php echo esc_attr(get_comment_date(DATE_W3C, $comment)); ?>"><?php echo esc_html(get_comment_date('Y.m.d H:i', $comment)); ?></time>
+		<div class="oldbook-comment__body">
+			<div class="oldbook-comment__avatar">
+				<?php echo get_avatar($comment, 42); ?>
+			</div>
+			<div class="oldbook-comment__main">
+				<div class="oldbook-comment__meta">
+					<strong class="oldbook-comment__author"><?php echo esc_html($author); ?></strong>
+					<time class="oldbook-comment__time" datetime="<?php echo esc_attr(get_comment_date(DATE_W3C, $comment)); ?>"><?php echo esc_html(get_comment_date('Y.m.d H:i', $comment)); ?></time>
+				</div>
+				<div class="oldbook-comment__text"><?php echo wp_kses_post(get_comment_text($comment)); ?></div>
+			</div>
 		</div>
-		<div class="oldbook-comment__text"><?php echo wp_kses_post(get_comment_text($comment)); ?></div>
 	</li>
 	<?php
-
-	return ob_get_clean();
 }
 
 function oldbook_render_update_social($post_id, $compact = false) {
@@ -112,7 +184,6 @@ function oldbook_render_update_social($post_id, $compact = false) {
 	$comment_count  = get_comments_number($post_id);
 	$comments_open  = comments_open($post_id);
 	$comments_id    = 'oldbook-comments-' . $post_id;
-	$comments_class = $comments ? '' : ' is-collapsed';
 	$like_count     = oldbook_get_like_count($post_id);
 	$liked          = oldbook_has_liked($post_id);
 	$like_label     = $liked ? __('取消点赞', 'oldbook') : __('点赞', 'oldbook');
@@ -142,60 +213,89 @@ function oldbook_render_update_social($post_id, $compact = false) {
 				<?php echo oldbook_icon('thumbs-up'); ?>
 				<span data-oldbook-like-count><?php echo esc_html(number_format_i18n($like_count)); ?></span>
 			</button>
-			<button class="oldbook-update__action oldbook-comment-toggle" type="button" data-oldbook-comment-toggle aria-controls="<?php echo esc_attr($comments_id); ?>" aria-expanded="<?php echo $comments ? 'true' : 'false'; ?>" aria-label="<?php esc_attr_e('查看评论', 'oldbook'); ?>" title="<?php esc_attr_e('查看评论', 'oldbook'); ?>">
+			<button class="oldbook-update__action oldbook-comment-toggle" type="button" data-oldbook-comment-toggle aria-controls="<?php echo esc_attr($comments_id); ?>" aria-expanded="false" aria-label="<?php esc_attr_e('查看评论', 'oldbook'); ?>" title="<?php esc_attr_e('查看评论', 'oldbook'); ?>">
 				<?php echo oldbook_icon('message-square'); ?>
 				<span data-oldbook-comment-count><?php echo esc_html(number_format_i18n($comment_count)); ?></span>
 			</button>
 		</div>
 		<p class="oldbook-update__interaction-status" data-oldbook-interaction-status role="status" aria-live="polite"></p>
-
-		<div id="<?php echo esc_attr($comments_id); ?>" class="oldbook-update__comments<?php echo esc_attr($comments_class); ?>" data-oldbook-comments>
-			<div class="oldbook-update__comments-inner">
-				<ol class="oldbook-comment-list" data-oldbook-comment-list>
-					<?php foreach ($comments as $comment) : ?>
-						<?php echo oldbook_render_comment_item($comment); ?>
-					<?php endforeach; ?>
-				</ol>
-
-				<?php if ($comments_open && (! get_option('comment_registration') || is_user_logged_in())) : ?>
-					<form class="oldbook-comment-form" data-oldbook-comment-form>
-						<input type="hidden" name="action" value="oldbook_add_comment">
-						<input type="hidden" name="nonce" value="<?php echo esc_attr(wp_create_nonce('oldbook_comment')); ?>">
-						<input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
-
-						<?php if (! is_user_logged_in()) : ?>
-							<div class="oldbook-comment-form__identity">
-								<label>
-									<span class="screen-reader-text"><?php esc_html_e('昵称', 'oldbook'); ?></span>
-									<input type="text" name="author" autocomplete="name" placeholder="<?php esc_attr_e('昵称', 'oldbook'); ?>" required>
-								</label>
-								<label>
-									<span class="screen-reader-text"><?php esc_html_e('邮箱', 'oldbook'); ?></span>
-									<input type="email" name="email" autocomplete="email" placeholder="<?php esc_attr_e('邮箱', 'oldbook'); ?>"<?php echo get_option('require_name_email') ? ' required' : ''; ?>>
-								</label>
-							</div>
-						<?php endif; ?>
-
-						<div class="oldbook-comment-form__field">
-							<label class="screen-reader-text" for="oldbook-comment-<?php echo esc_attr($post_id); ?>"><?php esc_html_e('评论内容', 'oldbook'); ?></label>
-							<textarea id="oldbook-comment-<?php echo esc_attr($post_id); ?>" name="content" rows="1" placeholder="<?php esc_attr_e('说点什么', 'oldbook'); ?>" required></textarea>
-							<button class="oldbook-comment-form__submit" type="submit">
-								<?php echo oldbook_icon('send'); ?>
-								<span><?php esc_html_e('发送', 'oldbook'); ?></span>
-							</button>
-						</div>
-						<p class="oldbook-comment-form__status" data-oldbook-comment-status role="status" aria-live="polite"></p>
-					</form>
-				<?php elseif (! $comments_open) : ?>
-					<p class="oldbook-comment-form__notice"><?php esc_html_e('评论已关闭。', 'oldbook'); ?></p>
-				<?php else : ?>
-					<p class="oldbook-comment-form__notice">
-						<a href="<?php echo esc_url(wp_login_url(home_url('/'))); ?>"><?php esc_html_e('登录后发表评论。', 'oldbook'); ?></a>
-					</p>
-				<?php endif; ?>
-			</div>
-		</div>
 	</section>
+	<?php
+}
+
+function oldbook_render_update_comments($post_id) {
+	$post_id        = absint($post_id);
+	$comments       = get_comments(
+		array(
+			'post_id' => $post_id,
+			'status'  => 'approve',
+			'type'    => 'comment',
+			'orderby' => 'comment_date_gmt',
+			'order'   => 'ASC',
+			'number'  => 20,
+		)
+	);
+	$comments_open  = comments_open($post_id);
+	$comments_id    = 'oldbook-comments-' . $post_id;
+	$comment_count  = count($comments);
+	?>
+	<div id="<?php echo esc_attr($comments_id); ?>" class="oldbook-update__comments is-collapsed" data-oldbook-comments>
+		<div class="oldbook-update__comments-title">
+			<span class="oldbook-update__comments-title-icon" aria-hidden="true"><?php echo oldbook_icon('message-circle'); ?></span>
+			<span><?php esc_html_e('Comments', 'oldbook'); ?></span>
+			<span class="oldbook-update__comments-title-count" data-oldbook-comments-title-count>| <?php echo esc_html(number_format_i18n($comment_count)); ?> <?php esc_html_e('条评论', 'oldbook'); ?></span>
+		</div>
+
+		<div class="oldbook-update__comments-form">
+			<?php if ($comments_open && (! get_option('comment_registration') || is_user_logged_in())) : ?>
+				<form class="oldbook-comment-form" data-oldbook-comment-form>
+					<input type="hidden" name="action" value="oldbook_add_comment">
+					<input type="hidden" name="nonce" value="<?php echo esc_attr(wp_create_nonce('oldbook_comment')); ?>">
+					<input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+
+					<?php if (! is_user_logged_in()) : ?>
+						<div class="oldbook-comment-form__identity">
+							<label>
+								<span class="screen-reader-text"><?php esc_html_e('昵称', 'oldbook'); ?></span>
+								<input type="text" name="author" autocomplete="name" placeholder="<?php esc_attr_e('昵称', 'oldbook'); ?>" required>
+							</label>
+							<label>
+								<span class="screen-reader-text"><?php esc_html_e('邮箱', 'oldbook'); ?></span>
+								<input type="email" name="email" autocomplete="email" placeholder="<?php esc_attr_e('邮箱', 'oldbook'); ?>"<?php echo get_option('require_name_email') ? ' required' : ''; ?>>
+							</label>
+						</div>
+					<?php endif; ?>
+
+					<div class="oldbook-comment-form__field">
+						<label class="screen-reader-text" for="oldbook-comment-<?php echo esc_attr($post_id); ?>"><?php esc_html_e('评论内容', 'oldbook'); ?></label>
+						<textarea id="oldbook-comment-<?php echo esc_attr($post_id); ?>" name="content" rows="1" placeholder="<?php esc_attr_e('说点什么', 'oldbook'); ?>" required></textarea>
+						<button class="oldbook-comment-form__submit" type="submit">
+							<span><?php esc_html_e('发送', 'oldbook'); ?></span>
+						</button>
+					</div>
+					<p class="oldbook-comment-form__status" data-oldbook-comment-status role="status" aria-live="polite"></p>
+				</form>
+			<?php elseif (! $comments_open) : ?>
+				<p class="oldbook-comment-form__notice"><?php esc_html_e('评论已关闭。', 'oldbook'); ?></p>
+			<?php else : ?>
+				<p class="oldbook-comment-form__notice">
+					<a href="<?php echo esc_url(wp_login_url(home_url('/'))); ?>"><?php esc_html_e('登录后发表评论。', 'oldbook'); ?></a>
+				</p>
+			<?php endif; ?>
+		</div>
+
+		<?php if ($comments) : ?>
+			<ol class="oldbook-comment-list" data-oldbook-comment-list>
+				<?php foreach ($comments as $comment) : ?>
+					<?php echo oldbook_render_comment_item($comment); ?>
+				<?php endforeach; ?>
+			</ol>
+		<?php else : ?>
+			<p class="oldbook-comment-list__empty" data-oldbook-comment-list>
+				<?php esc_html_e('还没有评论，来抢沙发吧！', 'oldbook'); ?>
+			</p>
+		<?php endif; ?>
+	</div>
 	<?php
 }
 

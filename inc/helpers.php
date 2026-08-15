@@ -186,7 +186,211 @@ function oldbook_get_layout_settings() {
 	return array(
 		'show_left_sidebar'  => (bool) get_theme_mod('oldbook_show_left_sidebar', true),
 		'show_right_sidebar' => (bool) get_theme_mod('oldbook_show_right_sidebar', true),
+		'mini_left_sidebar'  => (bool) get_theme_mod('oldbook_mini_left_sidebar', false),
 	);
+}
+
+function oldbook_get_home_content() {
+	$mode = sanitize_key((string) get_theme_mod('oldbook_home_content', 'articles'));
+
+	return in_array($mode, array('articles', 'updates'), true) ? $mode : 'articles';
+}
+
+function oldbook_time_ago($timestamp) {
+	$timestamp = absint($timestamp);
+	$diff      = time() - $timestamp;
+
+	if ($diff < 60) {
+		return __('刚刚', 'oldbook');
+	}
+
+	if ($diff < 3600) {
+		return sprintf(
+			/* translators: %d is the number of minutes. */
+			__('%d 分钟前', 'oldbook'),
+			floor($diff / 60)
+		);
+	}
+
+	if (date('Ymd', $timestamp) === date('Ymd', time())) {
+		return __('今天', 'oldbook');
+	}
+
+	$days = floor($diff / 86400);
+
+	if ($days <= 1) {
+		return __('昨天', 'oldbook');
+	}
+
+	if ($days < 7) {
+		return sprintf(
+			/* translators: %d is the number of days. */
+			__('%d 天前', 'oldbook'),
+			$days
+		);
+	}
+
+	if ($days < 30) {
+		return sprintf(
+			/* translators: %d is the number of weeks. */
+			__('%d 周前', 'oldbook'),
+			floor($days / 7)
+		);
+	}
+
+	return get_the_date('Y.m.d', $timestamp);
+}
+
+function oldbook_get_update_categories($post_id = 0) {
+	$post_id = $post_id ? absint($post_id) : get_the_ID();
+	$terms   = get_the_terms($post_id, 'update_category');
+
+	return is_wp_error($terms) || ! $terms ? array() : $terms;
+}
+
+function oldbook_get_post_categories($post_id = 0) {
+	$post_id = $post_id ? absint($post_id) : get_the_ID();
+	$terms   = get_the_terms($post_id, 'category');
+
+	return is_wp_error($terms) || ! $terms ? array() : $terms;
+}
+
+function oldbook_render_identity() {
+	$cover_url       = oldbook_get_cover_image_url();
+	$cover_settings  = oldbook_get_cover_settings();
+	$site_title      = oldbook_get_site_title();
+	$layout_settings = oldbook_get_layout_settings();
+	?>
+	<section class="oldbook-identity" aria-labelledby="oldbook-identity-title">
+		<div class="oldbook-identity__media" style="<?php echo esc_attr('--oldbook-cover-height:' . $cover_settings['height'] . 'px;--oldbook-cover-overlay:' . $cover_settings['overlay'] . ';'); ?>">
+			<?php if ($layout_settings['show_left_sidebar']) : ?>
+				<button class="oldbook-cover-menu" type="button" data-oldbook-menu-toggle aria-controls="oldbook-sidebar" aria-expanded="false" aria-label="<?php esc_attr_e('打开导航', 'oldbook'); ?>">
+					<?php echo oldbook_icon('menu'); ?>
+				</button>
+			<?php endif; ?>
+			<img src="<?php echo esc_url($cover_url); ?>" alt="" width="1600" height="900">
+			<span class="oldbook-identity__veil" aria-hidden="true"></span>
+			<div class="oldbook-identity__copy">
+				<span class="oldbook-kicker"><?php esc_html_e('个人档案', 'oldbook'); ?></span>
+				<h1 id="oldbook-identity-title"><?php echo esc_html($site_title); ?></h1>
+			</div>
+		</div>
+	</section>
+	<?php
+}
+
+function oldbook_render_article_card() {
+	$post_cats = oldbook_get_post_categories();
+	$feature   = get_the_post_thumbnail_url(get_the_ID(), 'large');
+
+	$excerpt = has_excerpt() ? get_the_excerpt() : get_the_content();
+	$excerpt = wp_strip_all_tags((string) $excerpt);
+	$excerpt = preg_replace('/\s+/', ' ', $excerpt);
+
+	if (mb_strlen($excerpt) < 40) {
+		$content = get_the_content();
+		$content = wp_strip_all_tags((string) $content);
+		$content = preg_replace('/\s+/', ' ', $content);
+		$excerpt = $content ? $content : $excerpt;
+	}
+
+	$excerpt = mb_substr($excerpt, 0, 100) . (mb_strlen($excerpt) > 100 ? '…' : '');
+	?>
+	<article class="oldbook-feed-card oldbook-feed-card--article">
+		<?php if ($feature) : ?>
+			<a class="oldbook-article__cover" href="<?php the_permalink(); ?>" tabindex="-1" aria-hidden="true">
+				<img src="<?php echo esc_url($feature); ?>" alt="" loading="lazy">
+			</a>
+		<?php endif; ?>
+		<div class="oldbook-article__body">
+			<div class="oldbook-article__title-row">
+				<h2 class="oldbook-article__title">
+					<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+				</h2>
+				<span class="oldbook-article__cat"><?php echo $post_cats ? esc_html($post_cats[0]->name) : esc_html__('未分类', 'oldbook'); ?></span>
+			</div>
+			<div class="oldbook-article__meta">
+				<span class="oldbook-article__author">@<?php the_author(); ?></span>
+				<span class="oldbook-article__meta-dot" aria-hidden="true"></span>
+				<time datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(oldbook_time_ago(get_the_date('U'))); ?></time>
+			</div>
+			<?php if ($excerpt) : ?>
+				<p class="oldbook-article__excerpt"><?php echo esc_html($excerpt); ?></p>
+			<?php endif; ?>
+
+			<div class="oldbook-article__actions">
+				<div class="oldbook-article__actions-left">
+					<?php
+					$post_id    = get_the_ID();
+					$like_count = oldbook_get_like_count($post_id);
+					$liked      = oldbook_has_liked($post_id);
+					?>
+					<button class="oldbook-article__action oldbook-article__like<?php echo $liked ? ' is-liked' : ''; ?>" type="button" data-oldbook-like data-post-id="<?php echo esc_attr($post_id); ?>" aria-pressed="<?php echo $liked ? 'true' : 'false'; ?>" aria-label="<?php echo $liked ? esc_attr__('取消点赞', 'oldbook') : esc_attr__('点赞', 'oldbook'); ?>">
+						<span class="oldbook-article__action-icon" aria-hidden="true"><?php echo oldbook_icon('thumbs-up'); ?></span>
+						<span data-oldbook-like-count><?php echo esc_html(number_format_i18n($like_count)); ?></span>
+					</button>
+					<span class="oldbook-article__action oldbook-article__comments">
+						<span class="oldbook-article__action-icon" aria-hidden="true"><?php echo oldbook_icon('message-square'); ?></span>
+						<?php echo esc_html(number_format_i18n(get_comments_number())); ?>
+					</span>
+				</div>
+				<div class="oldbook-article__share" x-data="{ open: false, copied: false }">
+					<button class="oldbook-article__action oldbook-article__share-btn" type="button" x-on:click="open = !open" x-on:click.outside="open = false" x-on:keydown.escape.window="open = false" aria-haspopup="true" x-bind:aria-expanded="open ? 'true' : 'false'">
+						<span class="oldbook-article__action-icon" aria-hidden="true"><?php echo oldbook_icon('share'); ?></span>
+						<span><?php esc_html_e('分享', 'oldbook'); ?></span>
+					</button>
+					<div class="oldbook-article__share-menu" x-cloak x-show="open" x-transition:enter="oldbook-pop-enter" x-transition:enter-start="oldbook-pop-enter-from" x-transition:enter-end="oldbook-pop-enter-to" x-transition:leave="oldbook-pop-leave" x-transition:leave-start="oldbook-pop-leave-from" x-transition:leave-end="oldbook-pop-leave-to">
+						<a class="oldbook-article__share-item" href="#" x-on:click.prevent="if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href); } else { var input = document.createElement('input'); input.value = window.location.href; document.body.appendChild(input); input.select(); document.execCommand('copy'); input.remove(); } copied = true; window.setTimeout(function () { copied = false; }, 1500)">
+							<span><?php esc_html_e('复制链接', 'oldbook'); ?></span>
+							<span class="oldbook-article__share-status" x-show="copied" x-cloak><?php esc_html_e('已复制', 'oldbook'); ?></span>
+						</a>
+						<a class="oldbook-article__share-item" href="<?php echo esc_url('https://service.weibo.com/share/share.php?url=' . rawurlencode(get_permalink()) . '&title=' . rawurlencode(get_the_title())); ?>" target="_blank" rel="noopener nofollow">
+							<span><?php esc_html_e('分享到微博', 'oldbook'); ?></span>
+						</a>
+						<a class="oldbook-article__share-item" href="<?php echo esc_url('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' . rawurlencode(get_permalink()) . '&title=' . rawurlencode(get_the_title())); ?>" target="_blank" rel="noopener nofollow">
+							<span><?php esc_html_e('分享到 QQ 空间', 'oldbook'); ?></span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</article>
+	<?php
+}
+function oldbook_render_category_nav($taxonomy, $current_id = 0, $base_url = '') {
+	if (! taxonomy_exists($taxonomy)) {
+		return;
+	}
+
+	$terms = get_terms(
+		array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'orderby'    => 'count',
+			'order'      => 'DESC',
+		)
+	);
+
+	if (is_wp_error($terms) || ! $terms) {
+		return;
+	}
+
+	$base_url  = $base_url ? $base_url : home_url('/');
+	$query_key = 'update_category' === $taxonomy ? 'update_cat' : 'article_cat';
+	?>
+	<nav class="oldbook-cat-nav" aria-label="<?php echo 'update_category' === $taxonomy ? esc_attr__('动态分类', 'oldbook') : esc_attr__('文章分类', 'oldbook'); ?>">
+		<ul>
+			<li>
+				<a class="oldbook-cat-nav__link<?php echo $current_id ? '' : ' is-active'; ?>" href="<?php echo esc_url($base_url); ?>"><?php esc_html_e('全部', 'oldbook'); ?></a>
+			</li>
+			<?php foreach ($terms as $term) : ?>
+				<li>
+					<a class="oldbook-cat-nav__link<?php echo (int) $current_id === (int) $term->term_id ? ' is-active' : ''; ?>" href="<?php echo esc_url(add_query_arg($query_key, $term->term_id, $base_url)); ?>"><?php echo esc_html($term->name); ?></a>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+	</nav>
+	<?php
 }
 
 function oldbook_get_update_types() {
@@ -457,44 +661,54 @@ function oldbook_get_update_preview($post_id) {
 	return oldbook_get_update_type_label($type);
 }
 
-function oldbook_icon($name, $class = '') {
-	$paths = array(
-		'activity'       => '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
-		'arrow-right'   => '<path d="M5 12h14M13 6l6 6-6 6"/>',
-		'arrow-up-right' => '<path d="M7 17 17 7M8 7h9v9"/>',
-		'chevron-down'   => '<path d="m6 9 6 6 6-6"/>',
-		'edit'           => '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
-		'external'       => '<path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>',
-		'heart'          => '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/>',
-		'link'           => '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
-		'menu'           => '<path d="M4 7h16M4 12h16M4 17h16"/>',
-		'message-circle' => '<path d="M21 11.5a8.38 8.38 0 0 1-9 8.5 8.5 8.5 0 0 1-3.7-.84L3 21l1.84-4.3A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
-		'message-square' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
-		'moon'           => '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>',
-		'music'          => '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
-		'pause'          => '<path d="M7 4v16M17 4v16"/>',
-		'photo'          => '<rect x="3" y="4" width="18" height="16" rx="1"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
-		'play'           => '<path d="m8 5 11 7-11 7Z"/>',
-		'plus'           => '<path d="M12 5v14M5 12h14"/>',
-		'search'         => '<circle cx="11" cy="11" r="6"/><path d="m16 16 4.5 4.5"/>',
-		'send'           => '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
-		'settings'       => '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/>',
-		'sun'            => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>',
-		'text'           => '<path d="M4 6h16M4 12h16M4 18h10"/>',
-		'thumbs-up'      => '<path d="M7 10v12"/><path d="M15 5.88 14 10h5a2 2 0 0 1 1.9 2.6l-1.6 6a2 2 0 0 1-1.9 1.4H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.7-1l1.5-2.5a1.5 1.5 0 0 1 2 .6Z"/>',
-		'trash'          => '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/>',
-		'video'          => '<rect x="3" y="5" width="13" height="14" rx="1"/><path d="m16 10 5-3v10l-5-3Z"/>',
-		'volume'         => '<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a9 9 0 0 1 0 12"/>',
-		'x'              => '<path d="M18 6 6 18M6 6l12 12"/>',
+function oldbook_icon_map() {
+	return array(
+		'activity'       => 'shouye',
+		'arrow-right'    => 'a-icon_arrowright_linear_light',
+		'arrow-up-right' => 'arrow-up-right',
+		'chevron-down'   => 'xiala',
+		'dashboard'      => 'icon_dashboard_linear_light',
+		'edit'           => 'icon_renwul_xian_light',
+		'external'       => 'external',
+		'heart'          => 'heart',
+		'link'           => 'icon_link_linear_light1',
+		'log-out'        => 'a-icon_logout_linear_light',
+		'menu'           => 'menu',
+		'message-circle' => 'icon_message_linear_light',
+		'message-square' => 'icon_comment_linear_light',
+		'moon'           => 'moon',
+		'music'          => 'music',
+		'pause'          => 'icon_pause_linear_light',
+		'photo'          => 'photo',
+		'play'           => 'icon_play_linear_light',
+		'plus'           => 'icon_add_linear_light',
+		'search'         => 'icon_search_linear_light',
+		'send'           => 'send',
+		'settings'       => 'shezhi',
+		'share'          => 'icon_transfer_linear_light',
+		'system'         => 'icon_system_linear_light',
+		'sun'            => 'sun',
+		'text'           => 'text',
+		'thumbs-up'      => 'dianzan2',
+		'trash'          => 'icon_delete_linear_light',
+		'upload'         => 'icon_upload_linear_light',
+		'video'          => 'video',
+		'volume'         => 'sound',
+		'x'              => 'icon_close_linear_light',
 	);
+}
 
-	if (! isset($paths[$name])) {
+function oldbook_icon($name, $class = '') {
+	$name = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $name);
+
+	if (! $name) {
 		return '';
 	}
 
-	$class = $class ? ' ' . sanitize_html_class($class) : '';
+	$map  = oldbook_icon_map();
+	$icon = isset($map[$name]) && $map[$name] ? $map[$name] : $name;
 
-	return '<svg class="oldbook-icon' . esc_attr($class) . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths[$name] . '</svg>';
+	return oldbook_iconfont($icon, $class);
 }
 
 function oldbook_iconfont($name, $class = '') {
@@ -504,7 +718,7 @@ function oldbook_iconfont($name, $class = '') {
 		return '';
 	}
 
-	$classes = 'oldbook-iconfont';
+	$classes = 'oldbook-icon oldbook-iconfont';
 	if ($class) {
 		$classes .= ' ' . sanitize_html_class($class);
 	}

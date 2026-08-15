@@ -140,6 +140,219 @@
 		}
 	});
 
+	function setupUpdateInteractions() {
+		var settings = window.oldbookInteractions || {};
+
+		if (!settings.ajaxUrl) {
+			return;
+		}
+
+		function sendForm(body) {
+			return fetch(settings.ajaxUrl, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+				},
+				body: body.toString()
+			}).then(function (response) {
+				if (!response.ok) {
+					throw new Error('请求失败');
+				}
+
+				return response.json();
+			});
+		}
+
+		document.querySelectorAll('[data-oldbook-like]').forEach(function (button) {
+			button.addEventListener('click', function () {
+				if (button.disabled) {
+					return;
+				}
+
+				var card = button.closest('.oldbook-feed-card');
+				var status = card ? card.querySelector('[data-oldbook-interaction-status]') : null;
+				var countEl = button.querySelector('[data-oldbook-like-count]');
+
+				if (!settings.likeNonce) {
+					return;
+				}
+
+				button.disabled = true;
+
+				sendForm(new URLSearchParams({
+					action: 'oldbook_toggle_like',
+					nonce: settings.likeNonce,
+					post_id: button.getAttribute('data-post-id')
+				}))
+					.then(function (result) {
+						if (!result.success || !result.data) {
+							throw new Error((result.data && result.data.message) || '点赞失败');
+						}
+
+						var liked = !!result.data.liked;
+
+						button.classList.toggle('is-liked', liked);
+						button.setAttribute('aria-pressed', liked ? 'true' : 'false');
+
+						if (countEl) {
+							countEl.textContent = result.data.count;
+						}
+
+						if (status) {
+							status.textContent = liked ? '已点赞' : '已取消点赞';
+							window.clearTimeout(status._oldbookTimer);
+							status._oldbookTimer = window.setTimeout(function () {
+								status.textContent = '';
+							}, 2000);
+						}
+					})
+					.catch(function (error) {
+						if (status) {
+							status.textContent = error.message;
+							window.clearTimeout(status._oldbookTimer);
+							status._oldbookTimer = window.setTimeout(function () {
+								status.textContent = '';
+							}, 2000);
+						}
+					})
+					.finally(function () {
+						button.disabled = false;
+					});
+			});
+		});
+
+		document.querySelectorAll('[data-oldbook-comment-toggle]').forEach(function (button) {
+			button.addEventListener('click', function () {
+				var target = document.getElementById(button.getAttribute('aria-controls'));
+
+				if (!target) {
+					return;
+				}
+
+				var opening = target.classList.contains('is-collapsed');
+
+				document.querySelectorAll('[data-oldbook-comments]').forEach(function (other) {
+					if (other !== target) {
+						other.classList.add('is-collapsed');
+
+						var otherButton = document.querySelector('[data-oldbook-comment-toggle][aria-controls="' + other.id + '"]');
+
+						if (otherButton) {
+							otherButton.setAttribute('aria-expanded', 'false');
+						}
+					}
+				});
+
+				target.classList.toggle('is-collapsed', !opening);
+				button.setAttribute('aria-expanded', opening ? 'true' : 'false');
+			});
+		});
+
+		document.querySelectorAll('[data-oldbook-comment-form]').forEach(function (form) {
+			form.addEventListener('submit', function (event) {
+				event.preventDefault();
+
+				var statusEl = form.querySelector('[data-oldbook-comment-status]');
+				var textarea = form.querySelector('textarea[name="content"]');
+				var submitBtn = form.querySelector('button[type="submit"]');
+				var content = textarea ? textarea.value.trim() : '';
+
+				if (!content) {
+					if (statusEl) {
+						statusEl.textContent = '请输入内容';
+					}
+					return;
+				}
+
+				var body = new URLSearchParams(new FormData(form));
+				body.set('action', 'oldbook_add_comment');
+
+				if (submitBtn) {
+					submitBtn.disabled = true;
+				}
+
+				sendForm(body)
+					.then(function (result) {
+						if (!result.success) {
+							throw new Error((result.data && result.data.message) || '评论失败');
+						}
+
+						if (statusEl) {
+							statusEl.textContent = result.data.message || '已发送';
+						}
+
+						var commentsWrap = form.closest('.oldbook-update__comments');
+
+						if (result.data.approved && result.data.html && commentsWrap) {
+							var list = commentsWrap.querySelector('[data-oldbook-comment-list]');
+
+							if (list) {
+								if (list.tagName === 'P') {
+									var freshList = document.createElement('ol');
+
+									freshList.className = 'oldbook-comment-list';
+									freshList.setAttribute('data-oldbook-comment-list', '');
+									list.replaceWith(freshList);
+									list = freshList;
+								}
+
+								list.insertAdjacentHTML('beforeend', result.data.html);
+							}
+						}
+
+						var card = form.closest('.oldbook-feed-card');
+
+						if (card) {
+							var countEl = card.querySelector('[data-oldbook-comment-count]');
+
+							if (countEl && typeof result.data.count !== 'undefined') {
+								countEl.textContent = result.data.count;
+							}
+						}
+
+						if (commentsWrap) {
+							var titleCount = commentsWrap.querySelector('[data-oldbook-comments-title-count]');
+
+							if (titleCount && typeof result.data.count !== 'undefined') {
+								titleCount.textContent = '| ' + result.data.count + ' 条评论';
+							}
+						}
+
+						if (textarea) {
+							textarea.value = '';
+						}
+					})
+					.catch(function (error) {
+						if (statusEl) {
+							statusEl.textContent = error.message;
+						}
+					})
+					.finally(function () {
+						if (submitBtn) {
+							submitBtn.disabled = false;
+						}
+					});
+			});
+		});
+	}
+
+	function setupScrollRadius() {
+		var appShell = document.querySelector('.oldbook-app');
+
+		if (!appShell) {
+			return;
+		}
+
+		function onScroll() {
+			var scrolled = (window.scrollY || document.documentElement.scrollTop) > 0;
+			appShell.classList.toggle('is-scrolled', scrolled);
+		}
+
+		window.addEventListener('scroll', onScroll, { passive: true });
+		onScroll();
+	}
+
 	window.addEventListener('resize', function () {
 		if (window.innerWidth > 768) {
 			setMenuState(false);
@@ -148,4 +361,6 @@
 
 	setupThemeToggle();
 	setupYiyanRefresh();
+	setupUpdateInteractions();
+	setupScrollRadius();
 }());

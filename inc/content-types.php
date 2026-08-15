@@ -59,11 +59,33 @@ function oldbook_register_content_types() {
 			'query_var'           => true,
 		)
 	);
+
+	register_taxonomy(
+		'update_category',
+		'oldbook_update',
+		array(
+			'labels' => array(
+				'name'          => __('动态分类', 'oldbook'),
+				'singular_name' => __('动态分类', 'oldbook'),
+			),
+			'public'             => true,
+			'hierarchical'       => true,
+			'show_ui'            => false,
+			'show_in_rest'       => false,
+			'show_admin_column'  => false,
+			'query_var'          => false,
+			'rewrite'            => false,
+			'default_term'       => array(
+				'name' => __('未分类', 'oldbook'),
+				'slug' => 'uncategorized',
+			),
+		)
+	);
 }
 add_action('init', 'oldbook_register_content_types');
 
 function oldbook_maybe_flush_rewrites() {
-	$version = '2';
+	$version = '4';
 
 	if ($version !== get_option('oldbook_rewrite_version')) {
 		flush_rewrite_rules();
@@ -83,26 +105,13 @@ function oldbook_deactivate_content_types() {
 }
 add_action('switch_theme', 'oldbook_deactivate_content_types');
 
-function oldbook_register_article_route() {
-	add_rewrite_rule('^articles/?$', 'index.php?oldbook_articles=1', 'top');
-}
-add_action('init', 'oldbook_register_article_route', 20);
-
 function oldbook_add_article_query_var($vars) {
-	$vars[] = 'oldbook_articles';
+	$vars[] = 'article_cat';
+	$vars[] = 'update_cat';
 
 	return $vars;
 }
 add_filter('query_vars', 'oldbook_add_article_query_var');
-
-function oldbook_load_article_template($template) {
-	if (get_query_var('oldbook_articles')) {
-		return get_template_directory() . '/page-articles.php';
-	}
-
-	return $template;
-}
-add_filter('template_include', 'oldbook_load_article_template');
 
 function oldbook_redirect_update_single() {
 	if (is_singular('oldbook_update') || is_post_type_archive('oldbook_update')) {

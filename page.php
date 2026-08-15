@@ -1,6 +1,6 @@
 <?php
 /**
- * Main site frame. Content templates can plug into the central column later.
+ * Default page template.
  *
  * @package oldbook
  */
@@ -9,62 +9,25 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-$cover_url = oldbook_get_cover_image_url();
-$cover_settings = oldbook_get_cover_settings();
-$site_title = oldbook_get_site_title();
 $layout_settings = oldbook_get_layout_settings();
-$home_content = oldbook_get_home_content();
-$update_cat   = absint(get_query_var('update_cat'));
-$article_cat  = absint(get_query_var('article_cat'));
-$current_cat  = 'updates' === $home_content ? $update_cat : $article_cat;
 
 get_header();
-?>
+
+while (have_posts()) :
+	the_post();
+	?>
 			<main id="primary" class="oldbook-main">
 				<?php oldbook_render_identity(); ?>
 
-				<?php oldbook_render_category_nav('updates' === $home_content ? 'update_category' : 'category', $current_cat); ?>
-
-				<section class="oldbook-content-stage" aria-label="<?php esc_attr_e('主要内容', 'oldbook'); ?>">
-					<div class="oldbook-feed">
-						<?php
-						$feed_args = array(
-							'post_type'           => 'updates' === $home_content ? 'oldbook_update' : 'post',
-							'post_status'         => 'publish',
-							'posts_per_page'      => 'updates' === $home_content ? 30 : 12,
-							'ignore_sticky_posts' => 'updates' === $home_content,
-						);
-
-						if ('updates' === $home_content && $update_cat) {
-							$feed_args['tax_query'] = array(
-								array(
-									'taxonomy' => 'update_category',
-									'field'    => 'term_id',
-									'terms'    => $update_cat,
-								),
-							);
-						} elseif ('articles' === $home_content && $article_cat) {
-							$feed_args['cat'] = $article_cat;
-						}
-
-						$feed_query = new WP_Query($feed_args);
-
-						if ($feed_query->have_posts()) :
-							while ($feed_query->have_posts()) :
-								$feed_query->the_post();
-
-								if ('updates' === $home_content) :
-									oldbook_render_update_card(get_the_ID());
-								else :
-									oldbook_render_article_card();
-								endif;
-							endwhile;
-							wp_reset_postdata();
-						else :
-							?>
-							<p class="oldbook-feed__empty"><?php echo 'updates' === $home_content ? esc_html__('还没有动态，去后台发布第一条吧。', 'oldbook') : esc_html__('还没有文章。', 'oldbook'); ?></p>
-						<?php endif; ?>
-					</div>
+				<section class="oldbook-content-stage" aria-label="<?php esc_attr_e('页面内容', 'oldbook'); ?>">
+					<article class="oldbook-single">
+						<header class="oldbook-single__head">
+							<h1 class="oldbook-single__title"><?php the_title(); ?></h1>
+						</header>
+						<div class="oldbook-single__content">
+							<?php the_content(); ?>
+						</div>
+					</article>
 				</section>
 			</main>
 
@@ -104,6 +67,7 @@ get_header();
 				</div>
 			</aside>
 			<?php endif; ?>
-<?php
+	<?php
+endwhile;
 
 get_footer();

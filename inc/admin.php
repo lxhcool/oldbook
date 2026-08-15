@@ -65,6 +65,24 @@ function oldbook_enqueue_admin_assets($hook_suffix) {
 	$admin_css_ver  = file_exists($admin_css_path) ? (string) filemtime($admin_css_path) : $theme->get('Version');
 	$admin_js_ver   = file_exists($admin_js_path) ? (string) filemtime($admin_js_path) : $theme->get('Version');
 
+	$iconfont_path = get_template_directory() . '/assets/iconfont/iconfont.js';
+	wp_enqueue_script(
+		'oldbook-iconfont',
+		get_template_directory_uri() . '/assets/iconfont/iconfont.js',
+		array(),
+		file_exists($iconfont_path) ? (string) filemtime($iconfont_path) : $theme->get('Version'),
+		true
+	);
+
+	$iconfont_fix_path = get_template_directory() . '/assets/js/oldbook-iconfont.js';
+	wp_enqueue_script(
+		'oldbook-iconfont-fix',
+		get_template_directory_uri() . '/assets/js/oldbook-iconfont.js',
+		array('oldbook-iconfont'),
+		file_exists($iconfont_fix_path) ? (string) filemtime($iconfont_fix_path) : $theme->get('Version'),
+		true
+	);
+
 	wp_enqueue_style(
 		'oldbook-admin',
 		get_template_directory_uri() . '/assets/css/admin.css',
@@ -138,14 +156,6 @@ function oldbook_admin_page_for_tab($tab) {
 	return isset($page_map[$tab]) ? $page_map[$tab] : 'oldbook';
 }
 
-function oldbook_settings_tabs() {
-	$tabs = oldbook_admin_tabs();
-
-	return array(
-		'settings' => $tabs['settings'],
-	);
-}
-
 function oldbook_get_admin_tab() {
 	$tabs        = oldbook_admin_tabs();
 	$page        = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : 'oldbook';
@@ -206,9 +216,9 @@ function oldbook_admin_notice() {
 	}
 }
 
-function oldbook_render_admin_heading($title, $description = '', $action = '') {
+function oldbook_render_admin_heading($title, $description = '', $action = '', $class = '') {
 	?>
-	<header class="oldbook-console__heading">
+	<header class="oldbook-console__heading<?php echo $class ? ' ' . esc_attr($class) : ''; ?>">
 		<div class="oldbook-console__heading-text">
 			<h2><?php echo esc_html($title); ?></h2>
 			<?php if ($description) : ?>
@@ -235,11 +245,16 @@ function oldbook_render_links_page() {
 }
 
 function oldbook_render_settings_nav($current) {
-	$tabs = oldbook_settings_tabs();
+	$tabs = oldbook_admin_tabs();
 	?>
-	<nav class="oldbook-console__nav" aria-label="<?php esc_attr_e('主题设置导航', 'oldbook'); ?>">
+	<nav class="oldbook-console__nav" aria-label="<?php esc_attr_e('设置导航', 'oldbook'); ?>">
 		<ul>
 			<?php foreach ($tabs as $slug => $item) : ?>
+				<?php
+				if ('oldbook' !== oldbook_admin_page_for_tab($slug) || ! current_user_can($item['cap'])) {
+					continue;
+				}
+				?>
 				<li class="<?php echo $current === $slug ? 'is-current' : ''; ?>">
 					<a href="<?php echo esc_url(oldbook_admin_page_url($slug)); ?>"<?php echo $current === $slug ? ' aria-current="page"' : ''; ?>>
 						<span class="oldbook-console__nav-icon" aria-hidden="true"><?php echo oldbook_icon($item['icon']); ?></span>
@@ -260,7 +275,7 @@ function oldbook_render_admin_page() {
 	$page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : 'oldbook';
 	$tab = oldbook_get_admin_tab();
 	$tabs = oldbook_admin_tabs();
-	$show_settings_nav = 'oldbook' === $page;
+	$is_settings_page = 'oldbook' === $page;
 
 	if ('oldbook' === $page && 'settings' !== $tab) {
 		oldbook_admin_redirect($tab);
@@ -270,22 +285,35 @@ function oldbook_render_admin_page() {
 		wp_die(esc_html__('你没有访问这个页面的权限。', 'oldbook'));
 	}
 
+	$save_form = '';
+
+	if ($is_settings_page) {
+		if ('settings' === $tab) {
+			$save_form = 'oldbook-settings-form';
+		}
+	}
+
 	$site_title = oldbook_get_site_title();
 	$logo_url   = oldbook_get_site_logo_url('full');
 	$logo_height = oldbook_get_logo_height();
 	?>
 	<div class="oldbook-console">
 		<header class="oldbook-console__header">
-			<div class="oldbook-console__brand" style="<?php echo esc_attr('--oldbook-admin-logo-height:' . $logo_height . 'px;'); ?>">
-				<?php if ($logo_url) : ?>
-					<img class="oldbook-console__brand-logo" src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($site_title); ?>">
-				<?php else : ?>
-					<span class="oldbook-console__brand-fallback" aria-hidden="true"><?php echo oldbook_icon('settings'); ?></span>
-				<?php endif; ?>
+			<div class="oldbook-console__header-left">
+				<div class="oldbook-console__brand" style="<?php echo esc_attr('--oldbook-admin-logo-height:' . $logo_height . 'px;'); ?>">
+					<?php if ($logo_url) : ?>
+						<img class="oldbook-console__brand-logo" src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($site_title); ?>">
+					<?php else : ?>
+						<span class="oldbook-console__brand-fallback" aria-hidden="true"><?php echo oldbook_icon('system'); ?></span>
+					<?php endif; ?>
+				</div>
+				<div class="oldbook-console__header-title">
+					<?php echo esc_html($tabs[$tab]['label']); ?>
+				</div>
 			</div>
 			<div class="oldbook-console__header-actions">
-				<?php if ($show_settings_nav) : ?>
-					<button class="oldbook-console__save button button-primary" type="submit" form="oldbook-settings-form">
+				<?php if ($save_form) : ?>
+					<button class="oldbook-console__save button button-primary" type="submit" form="<?php echo esc_attr($save_form); ?>">
 						<?php esc_html_e('保存设置', 'oldbook'); ?>
 					</button>
 				<?php endif; ?>
@@ -296,34 +324,36 @@ function oldbook_render_admin_page() {
 			</div>
 		</header>
 
-		<div class="oldbook-console__layout<?php echo $show_settings_nav ? '' : ' oldbook-console__layout--independent'; ?>">
-			<?php if ($show_settings_nav) : ?>
-				<?php oldbook_render_settings_nav($tab); ?>
+		<div class="oldbook-console__layout<?php echo $is_settings_page ? '' : ' oldbook-console__layout--independent'; ?>">
+			<?php if ($is_settings_page) : ?>
+				<div class="oldbook-console__rail">
+					<?php oldbook_render_settings_nav($tab); ?>
+				</div>
 			<?php endif; ?>
 
 			<div class="oldbook-console__body">
 				<?php oldbook_admin_notice(); ?>
 
-				<?php
-				switch ($tab) {
-					case 'publish':
-						oldbook_render_publish_tab();
-						break;
-					case 'links':
-						oldbook_render_links_tab();
-						break;
-					case 'add-link':
-						oldbook_render_add_link_tab();
-						break;
-					case 'settings':
-						oldbook_render_settings_tab();
-						break;
-					case 'updates':
-					default:
-						oldbook_render_updates_tab();
-						break;
-				}
-				?>
+					<?php
+					switch ($tab) {
+						case 'publish':
+							oldbook_render_publish_tab();
+							break;
+						case 'links':
+							oldbook_render_links_tab();
+							break;
+						case 'add-link':
+							oldbook_render_add_link_tab();
+							break;
+						case 'settings':
+							oldbook_render_settings_tab();
+							break;
+						case 'updates':
+						default:
+							oldbook_render_updates_tab();
+							break;
+					}
+					?>
 			</div>
 		</div>
 	</div>
@@ -487,106 +517,219 @@ function oldbook_render_settings_tab() {
 		wp_die(esc_html__('你没有管理站点设置的权限。', 'oldbook'));
 	}
 
-	$cover_settings = oldbook_get_cover_settings();
-	$logo_url       = oldbook_get_site_logo_url('full');
-	$logo_height    = oldbook_get_logo_height();
-	$cover_url      = oldbook_get_cover_image_url();
+	$cover_settings  = oldbook_get_cover_settings();
+	$logo_url        = oldbook_get_site_logo_url('full');
+	$logo_height     = oldbook_get_logo_height();
+	$cover_url       = oldbook_get_cover_image_url();
 	$site_title      = oldbook_get_site_title();
 	$signature       = (string) get_theme_mod('oldbook_profile_signature', '');
 	$layout_settings = oldbook_get_layout_settings();
 	$layout_key      = $layout_settings['show_left_sidebar']
-		? ($layout_settings['show_right_sidebar'] ? 'three' : 'left')
+		? ($layout_settings['show_right_sidebar']
+			? ($layout_settings['mini_left_sidebar'] ? 'mini-left' : 'three')
+			: 'left')
 		: ($layout_settings['show_right_sidebar'] ? 'right' : 'single');
+	$home_content    = oldbook_get_home_content();
+
+	$settings_sections = array(
+		'basic'     => array('label' => __('基本信息', 'oldbook'), 'href' => '#oldbook-section-basic'),
+		'layout'    => array('label' => __('页面布局', 'oldbook'), 'href' => '#oldbook-section-layout'),
+		'logo'      => array('label' => __('Logo 与标识', 'oldbook'), 'href' => '#oldbook-section-logo'),
+		'cover'     => array('label' => __('封面与蒙层', 'oldbook'), 'href' => '#oldbook-section-cover'),
+		'signature' => array('label' => __('个性签名', 'oldbook'), 'href' => '#oldbook-section-signature'),
+	);
 
 	oldbook_render_admin_heading(
-		__('站点设置', 'oldbook')
+		__('站点设置', 'oldbook'),
+		__('管理站点的基本信息、页面布局、Logo、封面与个性签名。', 'oldbook'),
+		'',
+		'oldbook-console__heading--settings'
 	);
 	?>
+	<nav class="oldbook-settings-tabs" aria-label="<?php esc_attr_e('站点设置分区', 'oldbook'); ?>">
+		<ul>
+			<?php foreach ($settings_sections as $slug => $section) : ?>
+				<li>
+					<a href="<?php echo esc_url($section['href']); ?>"<?php echo 'basic' === $slug ? ' class="is-current" aria-current="page"' : ''; ?>>
+						<?php echo esc_html($section['label']); ?>
+					</a>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+	</nav>
+
 	<form id="oldbook-settings-form" class="oldbook-admin-form oldbook-settings-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
 		<input type="hidden" name="action" value="oldbook_save_settings">
 		<?php wp_nonce_field('oldbook_save_settings'); ?>
 
-		<section class="oldbook-admin-form__section oldbook-settings-form__section oldbook-settings-form__section--full">
-			<h2><?php esc_html_e('站点信息', 'oldbook'); ?></h2>
-			<div class="oldbook-admin-field">
-				<label class="oldbook-admin-label" for="oldbook-site-title"><?php esc_html_e('站点标题', 'oldbook'); ?></label>
-				<input type="text" id="oldbook-site-title" name="oldbook_site_title" value="<?php echo esc_attr($site_title); ?>" maxlength="120" required>
-			</div>
-		</section>
-
-		<section class="oldbook-admin-form__section oldbook-settings-form__section oldbook-settings-form__section--full">
-			<h2><?php esc_html_e('页面布局', 'oldbook'); ?></h2>
-			<input type="hidden" name="oldbook_show_left_sidebar" value="<?php echo $layout_settings['show_left_sidebar'] ? '1' : '0'; ?>" data-oldbook-picker-input="show-left-sidebar">
-			<input type="hidden" name="oldbook_show_right_sidebar" value="<?php echo $layout_settings['show_right_sidebar'] ? '1' : '0'; ?>" data-oldbook-picker-input="show-right-sidebar">
-			<div class="oldbook-layout-picker" role="radiogroup" aria-label="<?php esc_attr_e('页面布局', 'oldbook'); ?>">
-				<?php
-				$layout_options = array(
-					'three'  => array('label' => __('三栏布局', 'oldbook'), 'left' => '1', 'right' => '1'),
-					'left'   => array('label' => __('左侧布局', 'oldbook'), 'left' => '1', 'right' => '0'),
-					'right'  => array('label' => __('右侧布局', 'oldbook'), 'left' => '0', 'right' => '1'),
-					'single' => array('label' => __('单栏布局', 'oldbook'), 'left' => '0', 'right' => '0'),
-				);
-				foreach ($layout_options as $key => $option) :
-					?>
-					<button type="button" class="oldbook-layout-option<?php echo $layout_key === $key ? ' is-selected' : ''; ?>" role="radio" aria-checked="<?php echo $layout_key === $key ? 'true' : 'false'; ?>" data-oldbook-layout-choice="<?php echo esc_attr($key); ?>" data-oldbook-layout-left="<?php echo esc_attr($option['left']); ?>" data-oldbook-layout-right="<?php echo esc_attr($option['right']); ?>">
-						<span class="oldbook-layout-option__preview oldbook-layout-option__preview--<?php echo esc_attr($key); ?>" aria-hidden="true"><i></i><i></i><i></i></span>
-						<strong class="oldbook-layout-option__copy"><?php echo esc_html($option['label']); ?></strong>
-					</button>
-				<?php endforeach; ?>
-			</div>
-		</section>
-
-		<section class="oldbook-admin-form__section oldbook-settings-form__section oldbook-settings-form__section--full oldbook-settings-logo">
-			<div class="oldbook-settings-logo__body">
-				<label class="oldbook-settings-logo__picker" for="oldbook-site-logo-file">
-					<span class="oldbook-admin-image-preview oldbook-admin-image-preview--logo" data-oldbook-logo-preview style="<?php echo esc_attr('--oldbook-admin-logo-height:' . $logo_height . 'px;'); ?>">
-						<?php if ($logo_url) : ?>
-							<img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($site_title); ?>">
-						<?php else : ?>
-							<span class="oldbook-admin-image-preview__empty"><?php esc_html_e('上传 Logo', 'oldbook'); ?></span>
-						<?php endif; ?>
-					</span>
-					<span class="oldbook-settings-logo__picker-action"><?php echo $logo_url ? esc_html__('更换 Logo', 'oldbook') : esc_html__('上传 Logo', 'oldbook'); ?></span>
-				</label>
-				<input class="oldbook-settings-logo__input" type="file" id="oldbook-site-logo-file" name="oldbook_site_logo_file" accept="image/*">
-				<div class="oldbook-settings-logo__height oldbook-admin-field">
-					<label class="oldbook-admin-label" for="oldbook-site-logo-height"><?php esc_html_e('Logo 高度', 'oldbook'); ?><output data-oldbook-range-output="oldbook-site-logo-height" data-oldbook-range-suffix="px"><?php echo esc_html($logo_height); ?>px</output></label>
-					<input type="range" id="oldbook-site-logo-height" name="oldbook_site_logo_height" value="<?php echo esc_attr($logo_height); ?>" min="16" max="72" step="1" data-oldbook-range>
+		<section id="oldbook-section-basic" class="oldbook-settings-section">
+			<header class="oldbook-settings-section__head">
+				<h2><?php esc_html_e('基本信息', 'oldbook'); ?></h2>
+				<p><?php esc_html_e('站点名称会显示在浏览器标签页和站点标识中。', 'oldbook'); ?></p>
+			</header>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-site-title"><?php esc_html_e('站点标题', 'oldbook'); ?></label>
+				</div>
+				<div class="oldbook-settings-field__control">
+					<input type="text" id="oldbook-site-title" name="oldbook_site_title" value="<?php echo esc_attr($site_title); ?>" maxlength="120" required>
 				</div>
 			</div>
 		</section>
 
-		<section class="oldbook-admin-form__section oldbook-settings-form__section oldbook-settings-form__section--full oldbook-settings-cover">
-			<h2><?php esc_html_e('封面与蒙层', 'oldbook'); ?></h2>
+		<section id="oldbook-section-layout" class="oldbook-settings-section">
+			<header class="oldbook-settings-section__head">
+				<h2><?php esc_html_e('页面布局', 'oldbook'); ?></h2>
+				<p><?php esc_html_e('决定站点内容区显示为几栏，更改后立即在站点中生效。', 'oldbook'); ?></p>
+			</header>
+			<input type="hidden" name="oldbook_show_left_sidebar" value="<?php echo $layout_settings['show_left_sidebar'] ? '1' : '0'; ?>" data-oldbook-picker-input="show-left-sidebar">
+			<input type="hidden" name="oldbook_show_right_sidebar" value="<?php echo $layout_settings['show_right_sidebar'] ? '1' : '0'; ?>" data-oldbook-picker-input="show-right-sidebar">
+			<input type="hidden" name="oldbook_mini_left_sidebar" value="<?php echo $layout_settings['mini_left_sidebar'] ? '1' : '0'; ?>" data-oldbook-picker-input="mini-left-sidebar">
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label><?php esc_html_e('布局样式', 'oldbook'); ?></label>
+				</div>
+				<div class="oldbook-settings-field__control">
+					<div class="oldbook-layout-picker" role="radiogroup" aria-label="<?php esc_attr_e('页面布局', 'oldbook'); ?>">
+						<?php
+						$layout_options = array(
+							'three'     => array('label' => __('三栏布局', 'oldbook'), 'left' => '1', 'right' => '1', 'mini' => '0'),
+							'mini-left' => array('label' => __('迷你左栏', 'oldbook'), 'left' => '1', 'right' => '1', 'mini' => '1'),
+							'left'      => array('label' => __('左侧布局', 'oldbook'), 'left' => '1', 'right' => '0', 'mini' => '0'),
+							'right'     => array('label' => __('右侧布局', 'oldbook'), 'left' => '0', 'right' => '1', 'mini' => '0'),
+							'single'    => array('label' => __('单栏布局', 'oldbook'), 'left' => '0', 'right' => '0', 'mini' => '0'),
+						);
+						foreach ($layout_options as $key => $option) :
+							?>
+							<button type="button" class="oldbook-layout-option<?php echo $layout_key === $key ? ' is-selected' : ''; ?>" role="radio" aria-checked="<?php echo $layout_key === $key ? 'true' : 'false'; ?>" data-oldbook-layout-choice="<?php echo esc_attr($key); ?>" data-oldbook-layout-left="<?php echo esc_attr($option['left']); ?>" data-oldbook-layout-right="<?php echo esc_attr($option['right']); ?>" data-oldbook-layout-mini="<?php echo esc_attr($option['mini']); ?>">
+								<span class="oldbook-layout-option__preview oldbook-layout-option__preview--<?php echo esc_attr($key); ?>" aria-hidden="true"><i></i><i></i><i></i></span>
+								<strong class="oldbook-layout-option__copy"><?php echo esc_html($option['label']); ?></strong>
+							</button>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			</div>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-home-content"><?php esc_html_e('首页内容', 'oldbook'); ?></label>
+					<p><?php esc_html_e('首页内容流默认显示文章列表还是动态列表。', 'oldbook'); ?></p>
+				</div>
+				<div class="oldbook-settings-field__control">
+					<select id="oldbook-home-content" name="oldbook_home_content">
+						<option value="articles"<?php selected($home_content, 'articles'); ?>><?php esc_html_e('文章列表', 'oldbook'); ?></option>
+						<option value="updates"<?php selected($home_content, 'updates'); ?>><?php esc_html_e('动态列表', 'oldbook'); ?></option>
+					</select>
+				</div>
+			</div>
+		</section>
+
+		<section id="oldbook-section-logo" class="oldbook-settings-section">
+			<header class="oldbook-settings-section__head">
+				<h2><?php esc_html_e('Logo 与标识', 'oldbook'); ?></h2>
+				<p><?php esc_html_e('Logo 显示在站点顶部标识和后台顶栏中。', 'oldbook'); ?></p>
+			</header>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-site-logo-file"><?php esc_html_e('Logo 图片', 'oldbook'); ?></label>
+					<p><?php esc_html_e('支持常见图片格式，透明背景效果最佳。', 'oldbook'); ?></p>
+				</div>
+				<div class="oldbook-settings-field__control">
+					<div class="oldbook-logo-upload">
+						<label class="oldbook-logo-upload__preview" for="oldbook-site-logo-file" data-oldbook-logo-preview data-oldbook-logo-label="<?php echo $logo_url ? esc_attr__('更换 Logo', 'oldbook') : esc_attr__('上传 Logo', 'oldbook'); ?>" style="<?php echo esc_attr('--oldbook-admin-logo-height:' . $logo_height . 'px;'); ?>">
+							<?php if ($logo_url) : ?>
+								<img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($site_title); ?>">
+							<?php else : ?>
+								<span class="oldbook-logo-upload__empty">
+									<span class="oldbook-logo-upload__icon" aria-hidden="true"><?php echo oldbook_icon('upload'); ?></span>
+								</span>
+							<?php endif; ?>
+						</label>
+						<input class="oldbook-settings-logo__input" type="file" id="oldbook-site-logo-file" name="oldbook_site_logo_file" accept="image/*">
+						<?php if ($logo_url) : ?>
+							<div class="oldbook-logo-upload__actions">
+								<button type="button" class="oldbook-logo-upload__remove" data-oldbook-remove-logo>
+									<?php echo oldbook_icon('trash'); ?>
+									<?php esc_html_e('移除', 'oldbook'); ?>
+								</button>
+								<input type="hidden" name="oldbook_remove_logo" value="0" data-oldbook-remove-logo-input>
+							</div>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-site-logo-height"><?php esc_html_e('Logo 高度', 'oldbook'); ?></label>
+					<p><?php esc_html_e('控制 Logo 在站点中的显示大小。', 'oldbook'); ?></p>
+				</div>
+				<div class="oldbook-settings-field__control">
+					<div class="oldbook-settings-range">
+						<input type="range" id="oldbook-site-logo-height" name="oldbook_site_logo_height" value="<?php echo esc_attr($logo_height); ?>" min="16" max="72" step="1" data-oldbook-range>
+						<output data-oldbook-range-output="oldbook-site-logo-height" data-oldbook-range-suffix="px"><?php echo esc_html($logo_height); ?>px</output>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="oldbook-section-cover" class="oldbook-settings-section">
+			<header class="oldbook-settings-section__head">
+				<h2><?php esc_html_e('封面与蒙层', 'oldbook'); ?></h2>
+				<p><?php esc_html_e('封面显示在站点顶部，蒙层用于保证标题文字可读。', 'oldbook'); ?></p>
+			</header>
 			<div class="oldbook-admin-cover-preview" data-oldbook-cover-preview style="<?php echo esc_attr('--oldbook-cover-height:' . $cover_settings['height'] . 'px;--oldbook-cover-overlay:' . $cover_settings['overlay'] . ';'); ?>">
 				<img src="<?php echo esc_url($cover_url); ?>" alt="">
 				<span class="oldbook-admin-cover-preview__overlay" aria-hidden="true"></span>
 				<span class="oldbook-admin-cover-preview__label"><?php esc_html_e('当前封面预览', 'oldbook'); ?></span>
 			</div>
-			<div class="oldbook-settings-cover__controls">
-				<div class="oldbook-admin-field">
-					<label class="oldbook-admin-label" for="oldbook-cover-file"><?php esc_html_e('上传封面', 'oldbook'); ?></label>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-cover-file"><?php esc_html_e('封面图片', 'oldbook'); ?></label>
+					<p><?php esc_html_e('建议使用横向大图，未上传时使用默认封面。', 'oldbook'); ?></p>
+				</div>
+				<div class="oldbook-settings-field__control">
 					<input type="file" id="oldbook-cover-file" name="oldbook_cover_file" accept="image/*">
 				</div>
-				<div class="oldbook-admin-field">
-					<label class="oldbook-admin-label" for="oldbook-cover-height"><?php esc_html_e('封面高度', 'oldbook'); ?><output data-oldbook-range-output="oldbook-cover-height" data-oldbook-range-suffix="px"><?php echo esc_html($cover_settings['height']); ?>px</output></label>
-					<input type="range" id="oldbook-cover-height" name="oldbook_cover_height" value="<?php echo esc_attr($cover_settings['height']); ?>" min="200" max="520" step="1" data-oldbook-range>
+			</div>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-cover-height"><?php esc_html_e('封面高度', 'oldbook'); ?></label>
+				</div>
+				<div class="oldbook-settings-field__control">
+					<div class="oldbook-settings-range">
+						<input type="range" id="oldbook-cover-height" name="oldbook_cover_height" value="<?php echo esc_attr($cover_settings['height']); ?>" min="200" max="520" step="1" data-oldbook-range>
+						<output data-oldbook-range-output="oldbook-cover-height" data-oldbook-range-suffix="px"><?php echo esc_html($cover_settings['height']); ?>px</output>
+					</div>
 				</div>
 			</div>
-			<div class="oldbook-settings-cover__overlay">
-				<div class="oldbook-admin-field">
-					<label class="oldbook-admin-label" for="oldbook-cover-overlay-color"><?php esc_html_e('蒙层颜色', 'oldbook'); ?></label>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-cover-overlay-color"><?php esc_html_e('蒙层颜色', 'oldbook'); ?></label>
+					<p><?php esc_html_e('蒙层叠加在封面上，帮助文字更清晰。', 'oldbook'); ?></p>
+				</div>
+				<div class="oldbook-settings-field__control">
 					<div class="oldbook-settings-color-control">
 						<input type="color" id="oldbook-cover-overlay-color" name="oldbook_cover_overlay_color" value="<?php echo esc_attr($cover_settings['overlay_color']); ?>" data-oldbook-cover-overlay-color>
 						<code data-oldbook-cover-overlay-output><?php echo esc_html($cover_settings['overlay_color']); ?></code>
 					</div>
 				</div>
-				<div class="oldbook-admin-field">
-					<label class="oldbook-admin-label" for="oldbook-cover-overlay-opacity"><?php esc_html_e('蒙层不透明度', 'oldbook'); ?><output data-oldbook-range-output="oldbook-cover-overlay-opacity"><?php echo esc_html($cover_settings['overlay_opacity']); ?>%</output></label>
-					<input type="range" id="oldbook-cover-overlay-opacity" name="oldbook_cover_overlay_opacity" value="<?php echo esc_attr($cover_settings['overlay_opacity']); ?>" min="0" max="100" step="1" data-oldbook-range data-oldbook-cover-overlay-opacity>
+			</div>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-cover-overlay-opacity"><?php esc_html_e('蒙层不透明度', 'oldbook'); ?></label>
 				</div>
-				<div class="oldbook-settings-cover__gradient">
-					<label class="oldbook-admin-label"><?php esc_html_e('蒙层样式', 'oldbook'); ?></label>
+				<div class="oldbook-settings-field__control">
+					<div class="oldbook-settings-range">
+						<input type="range" id="oldbook-cover-overlay-opacity" name="oldbook_cover_overlay_opacity" value="<?php echo esc_attr($cover_settings['overlay_opacity']); ?>" min="0" max="100" step="1" data-oldbook-range data-oldbook-cover-overlay-opacity>
+						<output data-oldbook-range-output="oldbook-cover-overlay-opacity"><?php echo esc_html($cover_settings['overlay_opacity']); ?>%</output>
+					</div>
+				</div>
+			</div>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label><?php esc_html_e('蒙层样式', 'oldbook'); ?></label>
+					<p><?php esc_html_e('渐变模式使用两种颜色混合出蒙层。', 'oldbook'); ?></p>
+				</div>
+				<div class="oldbook-settings-field__control">
 					<input type="hidden" name="oldbook_cover_gradient_enabled" value="<?php echo $cover_settings['gradient_enabled'] ? '1' : '0'; ?>" data-oldbook-picker-input="cover-gradient">
 					<div class="oldbook-picker oldbook-picker--compact" role="radiogroup" aria-label="<?php esc_attr_e('蒙层样式', 'oldbook'); ?>">
 						<button type="button" class="oldbook-picker__option<?php echo $cover_settings['gradient_enabled'] ? '' : ' is-selected'; ?>" role="radio" aria-checked="<?php echo $cover_settings['gradient_enabled'] ? 'false' : 'true'; ?>" data-oldbook-picker="cover-gradient" data-value="0"><?php esc_html_e('纯色', 'oldbook'); ?></button>
@@ -614,13 +757,22 @@ function oldbook_render_settings_tab() {
 			</div>
 		</section>
 
-		<section class="oldbook-admin-form__section oldbook-settings-form__section oldbook-settings-form__section--full">
-			<h2><?php esc_html_e('个性签名', 'oldbook'); ?></h2>
-			<label class="oldbook-admin-label" for="oldbook-profile-signature"><?php esc_html_e('签名内容', 'oldbook'); ?></label>
-			<textarea id="oldbook-profile-signature" name="oldbook_profile_signature" rows="3" maxlength="120"><?php echo esc_textarea($signature); ?></textarea>
+		<section id="oldbook-section-signature" class="oldbook-settings-section">
+			<header class="oldbook-settings-section__head">
+				<h2><?php esc_html_e('个性签名', 'oldbook'); ?></h2>
+				<p><?php esc_html_e('签名展示在站点的个人介绍区域。', 'oldbook'); ?></p>
+			</header>
+			<div class="oldbook-settings-field">
+				<div class="oldbook-settings-field__label">
+					<label for="oldbook-profile-signature"><?php esc_html_e('签名内容', 'oldbook'); ?></label>
+				</div>
+				<div class="oldbook-settings-field__control">
+					<textarea id="oldbook-profile-signature" name="oldbook_profile_signature" rows="3" maxlength="120"><?php echo esc_textarea($signature); ?></textarea>
+				</div>
+			</div>
 		</section>
 
-		<div class="oldbook-admin-form__actions oldbook-settings-form__actions">
+		<div class="oldbook-settings-footer">
 			<button type="submit" class="button button-primary button-large"><?php esc_html_e('保存设置', 'oldbook'); ?></button>
 		</div>
 	</form>
@@ -969,6 +1121,9 @@ function oldbook_handle_save_update() {
 	$saved_id = absint($saved_id);
 	update_post_meta($saved_id, '_oldbook_update_type', $type);
 
+	$update_category = isset($_POST['oldbook_update_category']) ? absint($_POST['oldbook_update_category']) : 0;
+	wp_set_object_terms($saved_id, $update_category ? array($update_category) : array(), 'update_category');
+
 	if ('text' === $type) {
 		delete_post_meta($saved_id, '_oldbook_media_source');
 		delete_post_meta($saved_id, '_oldbook_media_url');
@@ -1115,6 +1270,9 @@ function oldbook_handle_save_settings() {
 	$logo_height    = isset($_POST['oldbook_site_logo_height']) ? oldbook_sanitize_logo_height(wp_unslash($_POST['oldbook_site_logo_height'])) : 24;
 	$show_left_sidebar  = isset($_POST['oldbook_show_left_sidebar']) && '1' === sanitize_key(wp_unslash($_POST['oldbook_show_left_sidebar']));
 	$show_right_sidebar = isset($_POST['oldbook_show_right_sidebar']) && '1' === sanitize_key(wp_unslash($_POST['oldbook_show_right_sidebar']));
+	$mini_left_sidebar  = isset($_POST['oldbook_mini_left_sidebar']) && '1' === sanitize_key(wp_unslash($_POST['oldbook_mini_left_sidebar']));
+	$home_content       = isset($_POST['oldbook_home_content']) ? sanitize_key(wp_unslash($_POST['oldbook_home_content'])) : '';
+	$home_content       = in_array($home_content, array('articles', 'updates'), true) ? $home_content : 'articles';
 
 	if ($site_title) {
 		oldbook_set_theme_mod('oldbook_site_title', $site_title);
@@ -1140,19 +1298,28 @@ function oldbook_handle_save_settings() {
 	oldbook_set_theme_mod('oldbook_site_logo_height', $logo_height);
 	oldbook_set_theme_mod('oldbook_show_left_sidebar', $show_left_sidebar);
 	oldbook_set_theme_mod('oldbook_show_right_sidebar', $show_right_sidebar);
+	oldbook_set_theme_mod('oldbook_mini_left_sidebar', $mini_left_sidebar);
+	oldbook_set_theme_mod('oldbook_home_content', $home_content);
 
-	$logo_attachment_id = oldbook_handle_upload('oldbook_site_logo_file', 0, 'image');
+	$remove_logo = isset($_POST['oldbook_remove_logo']) && '1' === sanitize_key(wp_unslash($_POST['oldbook_remove_logo']));
 
-	if (is_wp_error($logo_attachment_id)) {
-		oldbook_redirect_save_error('settings', $logo_attachment_id->get_error_message());
-	}
+	if ($remove_logo) {
+		oldbook_remove_theme_mod('oldbook_site_logo_id');
+		oldbook_remove_theme_mod('oldbook_site_logo');
+	} else {
+		$logo_attachment_id = oldbook_handle_upload('oldbook_site_logo_file', 0, 'image');
 
-	if ($logo_attachment_id) {
-		$logo_url = wp_get_attachment_url($logo_attachment_id);
+		if (is_wp_error($logo_attachment_id)) {
+			oldbook_redirect_save_error('settings', $logo_attachment_id->get_error_message());
+		}
 
-		if ($logo_url) {
-			oldbook_set_theme_mod('oldbook_site_logo_id', absint($logo_attachment_id));
-			oldbook_set_theme_mod('oldbook_site_logo', esc_url_raw($logo_url));
+		if ($logo_attachment_id) {
+			$logo_url = wp_get_attachment_url($logo_attachment_id);
+
+			if ($logo_url) {
+				oldbook_set_theme_mod('oldbook_site_logo_id', absint($logo_attachment_id));
+				oldbook_set_theme_mod('oldbook_site_logo', esc_url_raw($logo_url));
+			}
 		}
 	}
 
